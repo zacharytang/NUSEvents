@@ -1,17 +1,21 @@
 {
-  "name": "myblog",
+  "name": "nus-events",
   "version": "1.0.0",
-  "description": "a very simple blog",
+  "description": "for orbital 2017",
   "main": "app.js",
+  "dependencies": {},
+  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zacharytang/NUSEvents.git"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "body-parser": "^1.17.1",
-    "ejs": "^2.5.6",
-    "express": "^4.15.2",
-    "mongoose": "^4.8.6"
-  }
+  "bugs": {
+    "url": "https://github.com/zacharytang/NUSEvents/issues"
+  },
+  "homepage": "https://github.com/zacharytang/NUSEvents#readme"
 }
