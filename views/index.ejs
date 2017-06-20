@@ -1,0 +1,18 @@
+<% include header.ejs %>
+  <% for (var i = 0; i < posts.length; i++) { %>
+    <article>
+      <div class = "title">
+        <h3> <a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></h3>
+      </div>
+      <div class="content">
+        <p> <%= posts[i].content %> </p>
+      </div>
+      <div class="category">
+        <p> <%= posts[i].category %> </p>
+      </div>
+    </article>
+  <% } %>
+  <div>
+    <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+  </div>
+<% include footer.ejs %>

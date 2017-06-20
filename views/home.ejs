@@ -1,0 +1,20 @@
+<% include header.ejs %>
+  <h3>Welcome to NUS Events!</h3>
+  <div>
+    <h3>Select a category to view: </h3>
+    <label for="categories">Categories: </label>
+    <select id="category" name="category">
+        <option value="/category/cultural">Cultural</option>
+        <option value="/category/sports">Sports</option>
+        <option value="/category/music">Music</option>
+        <option value="/category/faculty">Faculty</option>
+        <option value="/category/academic">Academic</option>
+        <option value="/category/others">Others</option>
+        <option value="/category/all" selected>View All</option>
+    </select>
+    <input type="submit" value="Go!" onclick="document.location.href = document.getElementById('category').value;">
+  </div>
+  <div>
+    <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+  </div>
+<% include footer.ejs %>
