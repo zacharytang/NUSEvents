@@ -1,18 +1,25 @@
 <% include header.ejs %>
-  <% for (var i = 0; i < posts.length; i++) { %>
-    <article>
-      <div class = "title">
-        <h3> <a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></h3>
-      </div>
-      <div class="content">
-        <p> <%= posts[i].content %> </p>
-      </div>
-      <div class="category">
-        <p> <%= posts[i].category %> </p>
-      </div>
-    </article>
-  <% } %>
+  <table class='table'>
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>Information</th>
+        <th>Type</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (var i = 0; i < posts.length; i++) { %>
+        <tr>
+          <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
+          <td><%= posts[i].content %></td>
+          <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].category %></a></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+  
   <div>
-    <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+    </br>
+    <p> <button type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
   </div>
 <% include footer.ejs %>
