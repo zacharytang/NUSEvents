@@ -23,9 +23,9 @@
         <!-- Form handler to check if fields are empty -->
         <script type="text/javascript">
             function submitFormHandler() {
-                if (document.getElementsByName("title")[0].value == "") {
+                if (!(/\S/.test(document.getElementsByName("title")[0].value))) {
                     alert("Please enter a title!");
-                } else if (document.getElementsByName("content")[0].value == "") {
+                } else if (!(/\S/.test(document.getElementsByName("content")[0].value))) {
                     alert("Please enter some content!");
                 } else {
                     var post = document.getElementById("new_post");
