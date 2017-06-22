@@ -1,5 +1,5 @@
 <% include header.ejs %>
-    <form method="post">
+    <!--form method="post">
         <div class="title">
             <label for="title">Event Name: </label>
             <input id="title" name="title" type="text">
@@ -21,4 +21,30 @@
         </div>
         <input type="submit" />
     </form>
-<% include footer.ejs %>
+    </br>
+    </br-->
+
+    <form method="post">
+        <div class="title form-group">
+            <label for="title">Event Name: </label>
+            <!--input id="title" name="title" type="text"-->
+            <input type="text" class="form-control" id="title" name="title">
+        </div>
+        <div class="body form-group">
+            <label for="body">Description: </label>
+            <!--textarea id="body" name="content"></textarea-->
+            <textarea class="form-control" rows="5" id="body" name="content"></textarea>
+        </div>
+        <div class="category form-group">
+            <label for="category">Category: </label>
+            <select class="form-control" id="category" name="category">
+                <option value="cultural">Cultural</option>
+                <option value="sports">Sports</option>
+                <option value="music">Music</option>
+                <option value="faculty">Faculty</option>
+                <option value="academic">Academic</option>
+                <option value="others" selected>Others</option>
+            </select>
+        </div>
+        <input type="submit" class="btn btn-primary"/>
+    </form>
