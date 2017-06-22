@@ -67,7 +67,7 @@ app.post("/newPost", function(request, response){
   })
 });
 
-app.get('/post/:id/delete', function(request, ressponse, next) {
+app.get('/post/:id/delete', function(request, response, next) {
    BlogPost.findOneAndRemove({_id: req.params.id}, function(err, postToDelete) {
        if (err) {
          return next(err);
