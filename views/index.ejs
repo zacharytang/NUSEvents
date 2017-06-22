@@ -1,9 +1,8 @@
 <% include header.ejs %>
   <div class="container-fluid text-left">
-    <!-- TODO. SHOW A CATEGORY TITLE FOR THE PAGE RESPECTIVELY -->
-    <h1>Title</h1>
+    <h1><%= category %></h1>
   </div>
-  
+
   <table class='table'>
     <thead>
       <tr>
@@ -22,7 +21,7 @@
       <% } %>
     </tbody>
   </table>
-  
+
   <div>
     </br>
     <p> <button type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>

@@ -17,17 +17,23 @@ app.get("/category/:categoryID", function(request, response){
   if (category != "all") {
     BlogPost.find({category: category}).sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
-        posts: data
+        posts: data,
+        category: capitalizeFirstLetter(category)
       });
     });
   } else {
     BlogPost.find().sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
-        posts: data
+        posts: data,
+        category: capitalizeFirstLetter(category)
       });
     });
   }
 });
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 app.get("/post/:id", function(request, response){
   var id = request.params.id;
