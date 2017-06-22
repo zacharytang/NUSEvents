@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "for orbital 2017",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {
+    "nodemon": "^1.11.0"
+  },
   "devDependencies": {},
   "scripts": {
     "start": "nodemon app.js"

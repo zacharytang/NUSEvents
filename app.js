@@ -17,17 +17,23 @@ app.get("/category/:categoryID", function(request, response){
   if (category != "all") {
     BlogPost.find({category: category}).sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
-        posts: data
+        posts: data,
+        category: capitalizeFirstLetter(category)
       });
     });
   } else {
     BlogPost.find().sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
-        posts: data
+        posts: data,
+        category: capitalizeFirstLetter(category)
       });
     });
   }
 });
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 app.get("/post/:id", function(request, response){
   var id = request.params.id;
@@ -61,7 +67,7 @@ app.post("/newPost", function(request, response){
   })
 });
 
-app.get('/post/:id/delete', function(req, res, next) {
+app.get('/post/:id/delete', function(request, ressponse, next) {
    BlogPost.findOneAndRemove({_id: req.params.id}, function(err, postToDelete) {
        if (err) {
          return next(err);
@@ -76,6 +82,16 @@ app.get('/post/:id/delete', function(req, res, next) {
 
 app.get("/deleted", function(request, response){
   response.render("postDeleted.ejs");
+});
+
+app.get('/post/deleteAll', function(request, response) {
+  BlogPost.remove({}, function(err) {
+    if (err) {
+      console.log(err);
+    } else {
+      response.redirect("/");
+    }
+  });
 });
 
 app.listen("3000");
