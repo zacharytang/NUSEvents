@@ -1,9 +1,13 @@
 <% include header.ejs %>
-  <article>
-      <p> Post Deleted! </p>
-      <p> <a href="/"> Home </a> </p>
-  </article>
-  <div>
-    <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+  <div class="container-fluid text-center">
+
+    <article>
+      <p> <small> Post Deleted! </small> </p>
+    </article>
+    <div class="btn-group">
+      <button type="button" class="btn btn-primary" onClick="window.location.href='/';">Home</button>
+      <button type="button" class="btn btn-primary" onClick="window.location.href='/category/all';">View All</button>
+      <button type="button" class="btn btn-primary" onClick="window.location.href='/newPost';">Post New Event</button>
+    </div>
   </div>
-<% include footer.ejs %>
+  <% include footer.ejs %>
