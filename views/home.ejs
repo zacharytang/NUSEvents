@@ -2,10 +2,37 @@
 
   <div class="container-fluid text-center">
     <h1><small>Welcome to </small>NUS Events</h1>
+
     <div>
       <h4>What type of Events do you want to see?</h4>
-      <label for="categories">Event Type: </label>
-      <select id="category" name="category">
+    </div>
+
+    <div class="dropdown btn-group">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+        Pick Event Type
+        <span class="caret"></span></button>
+      <ul class="dropdown-menu">
+        <li><a href="/category/all">All Types</a></li>
+        <li><a href="/category/cultural">Cultural</a></li>
+        <li><a href="/category/sports">Sports</a></li>
+        <li><a href="/category/music">Music</a></li>
+        <li><a href="/category/faculty">Faculty</a></li>
+        <li><a href="/category/academic">Academic</a></li>
+        <li><a href="/category/others">Others</a></li>
+      </ul>
+    </div>
+
+     <div>
+      <h4>Or do you want to post a new Event?</h4>
+      <p> <button class="btn" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
+    </div>
+
+  </div>
+
+
+
+  <!-- label for="categories">Event Type: </label>
+    <select id="category" name="category">
         <option value="/category/cultural">Cultural</option>
         <option value="/category/sports">Sports</option>
         <option value="/category/music">Music</option>
@@ -14,10 +41,13 @@
         <option value="/category/others">Others</option>
         <option value="/category/all" selected>View All</option>
     </select>
-      <input type="submit" value="Go!" onclick="document.location.href = document.getElementById('category').value;">
-    </div>
-    <div>
-      <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
-    </div>
-  </div>
+    <input type="submit" value="Go!" onclick="document.location.href = document.getElementById('category').value;">
+  </div-->
+
+
+  <!--div>
+    <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+  </div-->
+
+
   <% include footer.ejs %>
