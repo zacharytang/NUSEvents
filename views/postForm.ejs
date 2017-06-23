@@ -1,5 +1,5 @@
 <% include header.ejs %>
-<form method="post" id="new_post">
+<form method="post" id="new_post" enctype="multipart/form-data">
     <div class="title form-group">
         <label for="title">Event Name: </label>
         <input type="text" class="form-control" id="title" name="title">
@@ -25,6 +25,12 @@
             <option value="others" selected>Others</option>
         </select>
     </div>
+
+    <div class="image form-group">
+        <label for="image">Upload A Poster</label>
+        <input type="file" id="image" name="image" accept="image/*">
+    </div>
+
     <input type="button" onclick="submitFormHandler()" value="Submit Event" class="btn btn-primary"/>
     <!-- Form handler to check if fields are empty -->
     <script type="text/javascript">
