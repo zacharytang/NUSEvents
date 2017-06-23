@@ -1,23 +1,30 @@
 <% include header.ejs %>
-<article>
-    <header>
-        <h2>
-            <%= posts.title %>
-        </h2>
-    </header>
-    <div class="body">
-        <%= posts.content %>
+    <div class="container-fluid">
+        <article>
+            <header>
+                <h1>
+                    <%= posts.title %>
+                </h1>
+            </header>
+            <div class="body">
+                <p><%= posts.content %></p>
+                </br>
+                </br>
+                <p>More Details: <a href="<%= posts.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></p>
+            </div>
+            </br>
+            </br>
+            <div>
+                <p><a href=<%=posts.id + "/delete" %>>Delete post?</a></p>
+            </div>
+        </article>
+
     </div>
-</br>
-<div>
-    <p><a href=<%= posts.id + "/delete" %>>Delete post?</a></p>
-</div>
-</article>
 
-</br>
-</br>
-<div>
-    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button></p>
-</div>
+    </br>
+    </br>
+    <div>
+        <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button></p>
+    </div>
 
-<% include footer.ejs %>
+    <% include footer.ejs %>
