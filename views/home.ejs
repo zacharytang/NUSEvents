@@ -1,31 +1,31 @@
 <% include header.ejs %>
 
-  <div class="container-fluid text-center">
+<div class="container-fluid text-center">
     <h1><small>Welcome to </small>NUS Events</h1>
-    </br>
-    <div>
-      <h4>What type of Events do you want to see?</h4>
-    </div>
+</br>
+<div>
+    <h4>What type of Events do you want to see?</h4>
+</div>
 
-    <div class="dropdown btn-group">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+<div class="dropdown btn-group">
+    <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
         Pick Event Type
         <span class="caret"></span></button>
-      <ul class="dropdown-menu">
-        <li><a href="/category/all">All Types</a></li>
-        <li><a href="/category/cultural">Cultural</a></li>
-        <li><a href="/category/sports">Sports</a></li>
-        <li><a href="/category/music">Music</a></li>
-        <li><a href="/category/faculty">Faculty</a></li>
-        <li><a href="/category/academic">Academic</a></li>
-        <li><a href="/category/others">Others</a></li>
-      </ul>
+        <ul class="dropdown-menu">
+            <li><a href="/category/all">All Types</a></li>
+            <li><a href="/category/cultural">Cultural</a></li>
+            <li><a href="/category/sports">Sports</a></li>
+            <li><a href="/category/music">Music</a></li>
+            <li><a href="/category/faculty">Faculty</a></li>
+            <li><a href="/category/academic">Academic</a></li>
+            <li><a href="/category/others">Others</a></li>
+        </ul>
     </div>
 
-     <div>
-      <h4>Or do you want to post a new Event?</h4>
-      <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
+    <div>
+        <h4>Or do you want to post a new Event?</h4>
+        <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
     </div>
-
-  </div>
+    
+</div>
 <% include footer.ejs %>
