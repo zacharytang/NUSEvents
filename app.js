@@ -88,3 +88,5 @@ app.get('/post/deleteAll', function(request, response) {
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+app.listen("3000");
