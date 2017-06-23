@@ -1,6 +1,6 @@
 <% include header.ejs %>
   <div class="container-fluid text-left">
-    <h1><%= category %></h1>
+    <h1><%= capitalizeFirstLetter(category) %></h1>
   </div>
 
   <table class='table'>
@@ -16,7 +16,7 @@
         <tr>
           <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
           <td><%= posts[i].content %></td>
-          <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].category %></a></td>
+          <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalizeFirstLetter(posts[i].category) %></a></td>
         </tr>
       <% } %>
     </tbody>

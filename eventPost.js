@@ -11,4 +11,4 @@ var schema = new mongoose.Schema({
   category: String
 });
 
-module.exports = mongoose.model("BlogPost", schema);
+module.exports = mongoose.model("EventPost", schema);

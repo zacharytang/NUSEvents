@@ -6,7 +6,7 @@ var ejs = require("ejs");
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 app.use(express.static("public"));
-var BlogPost = require("./blogPost.js");
+var EventPost = require("./eventPost.js");
 
 app.get("/", function(request, response){
   response.render("home.ejs");
@@ -15,17 +15,19 @@ app.get("/", function(request, response){
 app.get("/category/:categoryID", function(request, response){
   var category = request.params.categoryID
   if (category != "all") {
-    BlogPost.find({category: category}).sort({date: -1}).exec(function(error, data){
+    EventPost.find({category: category}).sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
         posts: data,
-        category: capitalizeFirstLetter(category)
+        category: category,
+        capitalizeFirstLetter: capitalizeFirstLetter
       });
     });
   } else {
-    BlogPost.find().sort({date: -1}).exec(function(error, data){
+    EventPost.find().sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
         posts: data,
-        category: capitalizeFirstLetter(category)
+        category: category,
+        capitalizeFirstLetter: capitalizeFirstLetter
       });
     });
   }
@@ -37,12 +39,12 @@ function capitalizeFirstLetter(string) {
 
 app.get("/post/:id", function(request, response){
   var id = request.params.id;
-  BlogPost.find({_id: id}).exec(function(error,data) {
+  EventPost.find({_id: id}).exec(function(error,data) {
     if (error || data.length === 0) {
       response.status(404);
       response.render("404.ejs");
     } else {
-      response.render("blogPost.ejs", {
+      response.render("EventPost.ejs", {
         posts:data[0]
       })
     }
@@ -58,7 +60,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
 app.post("/newPost", function(request, response){
-  BlogPost.create({
+  EventPost.create({
     title: request.body.title,
     content: request.body.content,
     category: request.body.category
@@ -68,7 +70,7 @@ app.post("/newPost", function(request, response){
 });
 
 app.get('/post/:id/delete', function(request, response, next) {
-   BlogPost.findOneAndRemove({_id: request.params.id}, function(err, postToDelete) {
+   EventPost.findOneAndRemove({_id: request.params.id}, function(err, postToDelete) {
        if (err) {
          return next(err);
        } else if (!postToDelete) {
@@ -85,7 +87,7 @@ app.get("/deleted", function(request, response){
 });
 
 app.get('/post/deleteAll', function(request, response) {
-  BlogPost.remove({}, function(err) {
+  EventPost.remove({}, function(err) {
     if (err) {
       console.log(err);
     } else {
