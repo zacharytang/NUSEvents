@@ -34,7 +34,7 @@ app.get("/post/:id", function(request, response){
       response.status(404);
       response.render("404.ejs");
     } else {
-      response.render("EventPost.ejs", {
+      response.render("eventPost.ejs", {
         posts:data[0]
       })
     }
