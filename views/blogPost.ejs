@@ -8,11 +8,14 @@
         <div class="body">
             <%= posts.content %>
         </div>
+        </br>
         <div>
           <p><a href=<%= posts.id + "/delete" %>>Delete post?</a></p>
         </div>
     </article>
+
     <div>
-      <p> <button type="button" onClick="window.location.href='/newPost';">New Post</button> </p>
+      <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button></p>
     </div>
+
 <% include footer.ejs %>

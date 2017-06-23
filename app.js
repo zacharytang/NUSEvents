@@ -67,15 +67,15 @@ app.post("/newPost", function(request, response){
   })
 });
 
-app.get('/post/:id/delete', function(request, ressponse, next) {
-   BlogPost.findOneAndRemove({_id: req.params.id}, function(err, postToDelete) {
+app.get('/post/:id/delete', function(request, response, next) {
+   BlogPost.findOneAndRemove({_id: request.params.id}, function(err, postToDelete) {
        if (err) {
          return next(err);
        } else if (!postToDelete) {
-         return res.send(404);
-         res.render("404.ejs");
+         return response.send(404);
+         response.render("404.ejs");
        } else {
-         res.redirect("/deleted");
+         response.redirect("/deleted");
        }
    });
 });

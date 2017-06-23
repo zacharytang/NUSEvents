@@ -6,38 +6,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title> NUS Events </title>
-    <link rel="stylesheet" href="/newstyle.css">
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
         crossorigin="anonymous">
+    <link rel="stylesheet" href="/newstyle.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 </head>
 
 <body>
-
-    <!--nav class="navbar navbar-inverse navbar-fixed-top">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="/">NUSEvents</a>
-            </div>
-            <ul class="nav navbar-nav">
-                <li class="active"><a href="#">Home</a></li>
-            </ul>
-        </nav>
-
-    </div-->
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-                <a class="navbar-brand" href="/">NUSEvents</a>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/"><b>NUS</b>Events</a>
             </div>
             <div class="collapse navbar-collapse" id="myNavbar">
+
+                <form class="navbar-form navbar-left">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+
+                <button class="btn navbar-btn" type="button" onClick="window.location.href='/newPost';">Post New Event</button>
+
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="/">Home</a></li>
                     <li><a href="/category/all">View All</a></li>
                     <li><a href="/category/cultural">Cultural</a></li>
                     <li><a href="/category/sports">Sports</a></li>
@@ -46,6 +48,7 @@
                     <li><a href="/category/academic">Academic</a></li>
                     <li><a href="/category/others">Others</a></li>
                 </ul>
+
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
                     <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
