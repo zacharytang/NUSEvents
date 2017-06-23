@@ -14,23 +14,13 @@ app.get("/", function(request, response){
 
 app.get("/category/:categoryID", function(request, response){
   var category = request.params.categoryID
-  if (category != "all") {
-    EventPost.find({category: category}).sort({date: -1}).exec(function(error, data){
+    EventPost.find(category != "all" ? {category: category} : {}).sort({date: -1}).exec(function(error, data){
       response.render("index.ejs", {
         posts: data,
         category: category,
         capitalizeFirstLetter: capitalizeFirstLetter
       });
     });
-  } else {
-    EventPost.find().sort({date: -1}).exec(function(error, data){
-      response.render("index.ejs", {
-        posts: data,
-        category: category,
-        capitalizeFirstLetter: capitalizeFirstLetter
-      });
-    });
-  }
 });
 
 function capitalizeFirstLetter(string) {
