@@ -1,29 +1,29 @@
 <% include header.ejs %>
-  <div class="container-fluid text-left">
+<div class="container-fluid text-left">
     <h1><%= capitalizeFirstLetter(category) %></h1>
-  </div>
+</div>
 
-  <table class='table'>
+<table class='table'>
     <thead>
-      <tr>
-        <th>Event</th>
-        <th>Information</th>
-        <th>Type</th>
-      </tr>
+        <tr>
+            <th>Event</th>
+            <th>Information</th>
+            <th>Type</th>
+        </tr>
     </thead>
     <tbody>
-      <% for (var i = 0; i < posts.length; i++) { %>
-        <tr>
-          <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
-          <td><%= posts[i].content %></td>
-          <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalizeFirstLetter(posts[i].category) %></a></td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
+        <% for (var i = 0; i < posts.length; i++) { %>
+            <tr>
+                <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
+                <td><%= posts[i].content %></td>
+                <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalizeFirstLetter(posts[i].category) %></a></td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
 
-  <div>
+    <div>
     </br>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
-  </div>
+</div>
 <% include footer.ejs %>

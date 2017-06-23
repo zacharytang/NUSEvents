@@ -1,23 +1,21 @@
 {
-  "name": "nus-events",
-  "version": "1.0.0",
-  "description": "for orbital 2017",
-  "main": "app.js",
-  "dependencies": {
-    "nodemon": "^1.11.0"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "start": "nodemon app.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/zacharytang/NUSEvents.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/zacharytang/NUSEvents/issues"
-  },
-  "homepage": "https://github.com/zacharytang/NUSEvents#readme"
+    "name": "nus-events",
+    "version": "1.0.0",
+    "description": "for orbital 2017",
+    "main": "app.js",
+    "dependencies": {},
+    "devDependencies": {},
+    "scripts": {
+        "start": "nodemon app.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zacharytang/NUSEvents.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/zacharytang/NUSEvents/issues"
+    },
+    "homepage": "https://github.com/zacharytang/NUSEvents#readme"
 }

@@ -1,21 +1,21 @@
 <% include header.ejs %>
-    <article>
-        <header>
-            <h2>
-                <%= posts.title %>
-            </h2>
-        </header>
-        <div class="body">
-            <%= posts.content %>
-        </div>
-        </br>
-        <div>
-          <p><a href=<%= posts.id + "/delete" %>>Delete post?</a></p>
-        </div>
-    </article>
-
-    <div>
-      <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button></p>
+<article>
+    <header>
+        <h2>
+            <%= posts.title %>
+        </h2>
+    </header>
+    <div class="body">
+        <%= posts.content %>
     </div>
+</br>
+<div>
+    <p><a href=<%= posts.id + "/delete" %>>Delete post?</a></p>
+</div>
+</article>
+
+<div>
+    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button></p>
+</div>
 
 <% include footer.ejs %>
