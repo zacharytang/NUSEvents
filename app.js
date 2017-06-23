@@ -43,7 +43,9 @@ app.get("/post/:id", function(request, response){
 
 // New post form
 app.get("/newPost", function(request, response){
-    response.render("postForm.ejs");
+    response.render("postForm.ejs", {
+        maxChars: 500 // To be manually set
+    });
 });
 
 app.post("/newPost", function(request, response){
