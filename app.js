@@ -1,6 +1,7 @@
 var express = require("express");
 var app = express();
 var ejs = require("ejs");
+var multer = require("multer");
 var EventPost = require("./eventPost.js");
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -8,6 +9,18 @@ app.use(bodyParser.json());
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 app.use(express.static("public"));
+
+var storage = multer.diskStorage({
+    destination: function (request, file, cb) {
+        cb(null, './uploads/');
+    },
+    filename: function (request, file, cb) {
+        var originalname = file.originalname;
+        var extension = originalname.split(".");
+        filename = Date.now() + '.' + extension[extension.length-1];
+        cb(null, filename);
+    }
+});
 
 // Home Page
 app.get("/", function(request, response){
@@ -48,12 +61,22 @@ app.get("/newPost", function(request, response){
     });
 });
 
-app.post("/newPost", function(request, response){
+app.post("/newPost", multer({storage: storage}).single('image'), function(request, response){
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
         category: request.body.category,
         externalLink: request.body.externalLink,
+        image: {
+            fieldname: request.file.fieldname,
+            originalname: request.file.originalname,
+            encoding: request.file.encoding,
+            mimetype: request.file.mimetype,
+            destination:request.file.destination,
+            filename: request.file.filename,
+            path: request.file.path,
+            size: request.file.size
+        }
     }, function(error, data) {
         response.redirect("/");
     })
@@ -78,7 +101,7 @@ app.get("/deleted", function(request, response){
     response.render("postDeleted.ejs");
 });
 
-app.get('/post/deleteAll', function(request, response) {
+app.get('/deleteAll', function(request, response) {
     EventPost.remove({}, function(err) {
         if (err) {
             console.log(err);
