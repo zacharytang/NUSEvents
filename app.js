@@ -2,6 +2,7 @@ var express = require("express");
 var app = express();
 var ejs = require("ejs");
 var multer = require("multer");
+var fs = require ("fs");
 var EventPost = require("./eventPost.js");
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -101,10 +102,19 @@ app.post("/newPost", multer({storage: storage}).single('image'), function(reques
 
 // Deleting a post
 app.get('/post/:id/delete', function(request, response, next) {
-    EventPost.findOneAndRemove({_id: request.params.id}, function(err, postToDelete) {
-        if (err) {
-            return next(err);
-        } else if (!postToDelete) {
+    var id = request.params.id;
+    EventPost.find({_id: id}).exec(function(error,data) {
+        if (error || data.length === 0) {
+            return response.send(404);
+            response.render("404.ejs");
+        } else if (data[0].hasImage) {
+            fs.unlink("./uploads/" + data[0].image.filename, function(error) {
+                if (error) throw error;
+            });
+        }
+    });
+    EventPost.findOneAndRemove({_id: id}, function(error, postToDelete) {
+        if (error || !postToDelete) {
             return response.send(404);
             response.render("404.ejs");
         } else {
