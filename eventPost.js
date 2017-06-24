@@ -14,6 +14,7 @@ var schema = new mongoose.Schema({
     },
     category: String,
     externalLink: String,
+    hasImage: Boolean,
     image: {
         fieldname: String,
         originalname: String,
