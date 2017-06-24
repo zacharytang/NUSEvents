@@ -5,9 +5,15 @@
         <input type="text" class="form-control" id="title" name="title">
     </div>
     <div class="body form-group">
-        <label for="body">Description: </label>
-        <textarea class="form-control" rows="5" id="body" name="content"></textarea>
+        <label for="body">Description <small>(Maximum characters <%= maxChars %>)</small>: </label>
+        <textarea class="form-control" rows="5" id="body" name="content" maxlength=maxChars></textarea>
     </div>
+
+    <div class="external form-group">
+        <label for="external">External Link</label>
+        <input type="text" class="form-control" id="external" name="externalLink">
+    </div>
+
     <div class="category form-group">
         <label for="category">Category: </label>
         <select class="form-control" id="category" name="category">
@@ -27,6 +33,8 @@
             alert("Please enter a title!");
         } else if (!(/\S/.test(document.getElementsByName("content")[0].value))) {
             alert("Please enter some content!");
+        } else if (!(/\S/.test(document.getElementsByName("externalLink")[0].value))) {
+            alert("Please provide an external link!");
         } else {
             var post = document.getElementById("new_post");
             post.submit();

@@ -43,14 +43,17 @@ app.get("/post/:id", function(request, response){
 
 // New post form
 app.get("/newPost", function(request, response){
-    response.render("postForm.ejs");
+    response.render("postForm.ejs", {
+        maxChars: 500 // To be manually set
+    });
 });
 
 app.post("/newPost", function(request, response){
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
-        category: request.body.category
+        category: request.body.category,
+        externalLink: request.body.externalLink,
     }, function(error, data) {
         response.redirect("/");
     })

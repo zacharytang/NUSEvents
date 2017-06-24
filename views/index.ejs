@@ -8,7 +8,8 @@
         <tr>
             <th class="col-xs-2">Event</th>
             <th class="col-xs-2">Organisation/Society</th>
-            <th class="col-xs-7">Information</th>
+            <th class="col-xs-6">Information</th>
+            <th class="col-xs-1"></th>
             <th class="col-xs-1">Type</th>
         </tr>
     </thead>
@@ -18,6 +19,7 @@
                 <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
                 <td><%= posts[i].organiser %></td>
                 <td><%= posts[i].content %></td>
+                <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalizeFirstLetter(posts[i].category) %></a></td>
             </tr>
             <% } %>

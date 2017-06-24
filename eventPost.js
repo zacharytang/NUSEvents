@@ -12,7 +12,8 @@ var schema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    category: String
+    category: String,
+    externalLink: String
 });
 
 module.exports = mongoose.model("EventPost", schema);
