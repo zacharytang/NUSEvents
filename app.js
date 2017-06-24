@@ -53,15 +53,14 @@ app.get("/catimageview/:categoryID", function(request, response){
 });
 
 // View individual post
-app.get("/post/:id", function(request, response){
-    var id = request.params.id;
-    EventPost.find({_id: id}).exec(function(error,data) {
-        if (error || data.length === 0) {
+app.get("/post/:id", function(request, response) {
+    EventPost.findById(request.params.id, function(error, post) {
+        if (error || !post) {
             response.status(404);
             response.render("404.ejs");
         } else {
             response.render("eventPost.ejs", {
-                posts:data[0]
+                post: post
             })
         }
     });
@@ -101,23 +100,17 @@ app.post("/newPost", multer({storage: storage}).single('image'), function(reques
 });
 
 // Deleting a post
-app.get('/post/:id/delete', function(request, response, next) {
-    var id = request.params.id;
-    EventPost.find({_id: id}).exec(function(error,data) {
-        if (error || data.length === 0) {
-            return response.send(404);
-            response.render("404.ejs");
-        } else if (data[0].hasImage) {
-            fs.unlink("./uploads/" + data[0].image.filename, function(error) {
-                if (error) throw error;
-            });
-        }
-    });
-    EventPost.findOneAndRemove({_id: id}, function(error, postToDelete) {
+app.get('/post/:id/delete', function(request, response) {
+    EventPost.findByIdAndRemove(request.params.id, function(error, postToDelete) {
         if (error || !postToDelete) {
             return response.send(404);
             response.render("404.ejs");
         } else {
+            if (postToDelete.hasImage) {
+                fs.unlink("./uploads/" + postToDelete.image.filename, function(error) {
+                    if (error) throw error;
+                });
+            }
             response.redirect("/deleted");
         }
     });
@@ -128,6 +121,7 @@ app.get("/deleted", function(request, response){
     response.render("postDeleted.ejs");
 });
 
+// For testing purposes
 app.get('/deleteAll', function(request, response) {
     EventPost.remove({}, function(err) {
         if (err) {
