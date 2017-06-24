@@ -43,7 +43,7 @@ app.get("/category/:categoryID", function(request, response){
 app.get("/catimageview/:categoryID", function(request, response){
     var category = request.params.categoryID
     EventPost.find(category != "all" ? {category: category} : {}).sort({date: -1}).exec(function(error, data){
-        response.render("index.ejs", {
+        response.render("indeximg.ejs", {
             posts: data,
             category: category,
             capitalizeFirstLetter: capitalizeFirstLetter
