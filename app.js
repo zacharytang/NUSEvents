@@ -74,12 +74,9 @@ app.get("/newPost", function(request, response){
 });
 
 app.post("/newPost", multer({storage: storage}).single('image'), function(request, response){
-    EventPost.create({
-        title: request.body.title,
-        content: request.body.content,
-        category: request.body.category,
-        externalLink: request.body.externalLink,
-        image: {
+    var hasImage = request.file ? true : false;
+    if (hasImage) {
+        var image = {
             fieldname: request.file.fieldname,
             originalname: request.file.originalname,
             encoding: request.file.encoding,
@@ -88,10 +85,18 @@ app.post("/newPost", multer({storage: storage}).single('image'), function(reques
             filename: request.file.filename,
             path: request.file.path,
             size: request.file.size
-        }
+        };
+    };
+    EventPost.create({
+        title: request.body.title,
+        content: request.body.content,
+        category: request.body.category,
+        externalLink: request.body.externalLink,
+        hasImage: hasImage,
+        image: hasImage ? image : null,
     }, function(error, data) {
         response.redirect("/");
-    })
+    });
 });
 
 // Deleting a post
