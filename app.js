@@ -13,7 +13,7 @@ app.use(express.static("public"));
 
 var storage = multer.diskStorage({
     destination: function (request, file, cb) {
-        cb(null, './uploads/');
+        cb(null, './public/uploads/');
     },
     filename: function (request, file, cb) {
         var originalname = file.originalname;
@@ -107,7 +107,7 @@ app.get('/post/:id/delete', function(request, response) {
             response.render("404.ejs");
         } else {
             if (postToDelete.hasImage) {
-                fs.unlink("./uploads/" + postToDelete.image.filename, function(error) {
+                fs.unlink("./public/uploads/" + postToDelete.image.filename, function(error) {
                     if (error) throw error;
                 });
             }
