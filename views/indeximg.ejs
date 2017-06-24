@@ -12,32 +12,6 @@
   </a>
 <% } %>
 
-<!--table class='table'>
-    <thead>
-        <tr>
-            <th class="col-xs-2">Event</th>
-            <th class="col-xs-2">Organisation/Society</th>
-            <th class="col-xs-6">Information</th>
-            <th class="col-xs-1"></th>
-            <th class="col-xs-1">Type</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% for (var i = 0; i < posts.length; i++) { %>
-            <tr>
-                <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
-                <td><%= posts[i].organiser %></td>
-                <td><%= posts[i].content %></td>
-                <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
-                <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalizeFirstLetter(posts[i].category) %></a></td>
-            </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-
-    <div-->
-
 <div>
     </br>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
