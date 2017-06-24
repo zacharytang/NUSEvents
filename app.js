@@ -39,6 +39,18 @@ app.get("/category/:categoryID", function(request, response){
     });
 });
 
+// View posters by category
+app.get("/catimageview/:categoryID", function(request, response){
+    var category = request.params.categoryID
+    EventPost.find(category != "all" ? {category: category} : {}).sort({date: -1}).exec(function(error, data){
+        response.render("index.ejs", {
+            posts: data,
+            category: category,
+            capitalizeFirstLetter: capitalizeFirstLetter
+        });
+    });
+});
+
 // View individual post
 app.get("/post/:id", function(request, response){
     var id = request.params.id;
