@@ -3,8 +3,7 @@
     <h1><%= capitalizeFirstLetter(category) %><small> Poster View</small></h1>
 </div>
 
-
-
+<button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/category/<%=category%>';">Switch View</button>
 
 <% for (var i = 0; i < posts.length; i++) { %>
   <a href="<%= '/post/' + posts[i]._id %>">
@@ -12,8 +11,6 @@
       <!--figcaption>/uploads/<%= posts[i].image.filename %></figcaption-->
   </a>
 <% } %>
-
-
 
 <!--table class='table'>
     <thead>
