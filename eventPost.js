@@ -13,7 +13,19 @@ var schema = new mongoose.Schema({
         default: Date.now
     },
     category: String,
-    externalLink: String
+    externalLink: String,
+    hasImage: Boolean,
+    image: {
+        fieldname: String,
+        originalname: String,
+        encoding: String,
+        mimeptype: String,
+        destination: String,
+        filename: String,
+        path: String,
+        size: Number,
+        uploaded_at: Date
+    }
 });
 
 module.exports = mongoose.model("EventPost", schema);

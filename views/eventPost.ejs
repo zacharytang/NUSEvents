@@ -3,22 +3,22 @@
     <article>
         <header>
             <h1>
-                <%= posts.title %>
+                <%= post.title %>
             </h1>
         </header>
         <div class="body">
-            <p><%= posts.content %></p>
+            <p><%= post.content %></p>
         </br>
         </br>
         <p>
-            More Details: <a href="<%= posts.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a>
+            More Details: <a href="<%= post.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a>
         </p>
     </div>
     </br>
     </br>
     <div>
         <p>
-            <button class="btn btn-primary" type="button" onClick="window.location.href='<%=posts.id + "/delete" %>';">Delete Post</button>
+            <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + "/delete" %>';">Delete Post</button>
         </p>
     </div>
     </article>
