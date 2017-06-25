@@ -6,14 +6,26 @@ var schema = new mongoose.Schema({
     content: String,
     organiser: {
         type: String,
-        default: "None"
+        default: "NUS Computing Club" //Set to default for Computing Club
     },
     date: {
         type: Date,
         default: Date.now
     },
     category: String,
-    externalLink: String
+    externalLink: String,
+    hasImage: Boolean,
+    image: {
+        fieldname: String,
+        originalname: String,
+        encoding: String,
+        mimeptype: String,
+        destination: String,
+        filename: String,
+        path: String,
+        size: Number,
+        uploaded_at: Date
+    }
 });
 
 module.exports = mongoose.model("EventPost", schema);
