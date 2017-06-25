@@ -6,10 +6,12 @@
 <button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/category/<%=category%>';">Switch View</button>
 
 <% for (var i = 0; i < posts.length; i++) { %>
+    <% if (posts[i].image.filename) { %>
   <a href="<%= '/post/' + posts[i]._id %>">
       <img class="thumbnail" src="/uploads/<%= posts[i].image.filename %>" alt="">
       <!--figcaption>/uploads/<%= posts[i].image.filename %></figcaption-->
   </a>
+  <% } %>
 <% } %>
 
 <div>
