@@ -6,8 +6,15 @@
                 <%= post.title %>
             </h1>
         </header>
-        <div class="body">
-            <p><%= post.content %></p>
+        <div class="body row">
+            <div class="col-xs-8">
+            <% if (post.image.filename) { %>
+            <img class="post img-center" src="/uploads/<%= post.image.filename %>" alt="">
+            <% } %>
+            </div>
+            <div class"col-sx-4">
+            <h5 ><%= post.content %></h5>
+            </div>
         </br>
         </br>
         <p>
