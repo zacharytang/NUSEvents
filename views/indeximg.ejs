@@ -1,6 +1,7 @@
 <% include header.ejs %>
+
 <div class="container-fluid text-left">
-    <h1><%= capitalizeFirstLetter(category) %><small> Poster View</small></h1>
+    <h1><%= capitalize(category) %><small> Poster View</small></h1>
 </div>
 
 <button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/category/<%=category%>';">Switch View</button>
@@ -18,4 +19,5 @@
     </br>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
 </div>
+
 <% include footer.ejs %>

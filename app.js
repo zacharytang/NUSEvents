@@ -5,6 +5,7 @@ var multer = require("multer");
 var fs = require ("fs");
 var EventPost = require("./eventPost.js");
 var bodyParser = require("body-parser");
+var settings = require("./config/config.js");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set("views", __dirname + "/views");
@@ -25,7 +26,10 @@ var storage = multer.diskStorage({
 
 // Home Page
 app.get("/", function(request, response){
-    response.render("home.ejs");
+    response.render("home.ejs", {
+        categories: settings.categories,
+        capitalize: capitalize
+    });
 });
 
 // View by category
@@ -35,7 +39,8 @@ app.get("/category/:categoryID", function(request, response){
         response.render("index.ejs", {
             posts: data,
             category: category,
-            capitalizeFirstLetter: capitalizeFirstLetter
+            categories: settings.categories,
+            capitalize: capitalize
         });
     });
 });
@@ -47,7 +52,8 @@ app.get("/catimageview/:categoryID", function(request, response){
         response.render("indeximg.ejs", {
             posts: data,
             category: category,
-            capitalizeFirstLetter: capitalizeFirstLetter
+            categories: settings.categories,
+            capitalize: capitalize
         });
     });
 });
@@ -60,6 +66,8 @@ app.get("/post/:id", function(request, response) {
             response.render("404.ejs");
         } else {
             response.render("eventPost.ejs", {
+                categories: settings.categories,
+                capitalize: capitalize,
                 post: post
             })
         }
@@ -69,7 +77,9 @@ app.get("/post/:id", function(request, response) {
 // New post form
 app.get("/newPost", function(request, response){
     response.render("postForm.ejs", {
-        maxChars: 500 // To be manually set
+        maxChars: settings.maxChars, // To be manually set
+        categories: settings.categories,
+        capitalize: capitalize
     });
 });
 
@@ -118,7 +128,10 @@ app.get('/post/:id/delete', function(request, response) {
 
 // Post deleted
 app.get("/deleted", function(request, response){
-    response.render("postDeleted.ejs");
+    response.render("postDeleted.ejs", {
+        categories: settings.categories,
+        capitalize: capitalize
+    });
 });
 
 // For testing purposes
@@ -132,7 +145,7 @@ app.get('/deleteAll', function(request, response) {
     });
 });
 
-function capitalizeFirstLetter(string) {
+function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
