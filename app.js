@@ -5,6 +5,7 @@ var multer = require("multer");
 var fs = require ("fs");
 var EventPost = require("./eventPost.js");
 var bodyParser = require("body-parser");
+var settings = require("./config/config.js");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.set("views", __dirname + "/views");
@@ -69,7 +70,7 @@ app.get("/post/:id", function(request, response) {
 // New post form
 app.get("/newPost", function(request, response){
     response.render("postForm.ejs", {
-        maxChars: 500 // To be manually set
+        maxChars: settings.maxChars // To be manually set
     });
 });
 
