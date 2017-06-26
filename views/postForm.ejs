@@ -35,6 +35,15 @@
     <!-- Form handler to check if fields are empty -->
     <script type="text/javascript">
     function submitFormHandler() {
+        var post = document.getElementById("new_post");
+        // Check link
+        var link = document.getElementsByName('externalLink')[0].value;
+        var result = link.split("//");
+        if (result[0] != "https:" && result[0] != "http:") {
+            document.getElementsByName('externalLink')[0].value = "http://" + link;
+        }
+
+        // Check form for empty fields
         if (!(/\S/.test(document.getElementsByName("title")[0].value))) {
             alert("Please enter a title!");
         } else if (!(/\S/.test(document.getElementsByName("content")[0].value))) {
@@ -42,7 +51,6 @@
         } else if (!(/\S/.test(document.getElementsByName("externalLink")[0].value))) {
             alert("Please provide an external link!");
         } else {
-            var post = document.getElementById("new_post");
             post.submit();
         }
     }
