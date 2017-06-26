@@ -1,4 +1,5 @@
 <% include header.ejs %>
+
 <form method="post" id="new_post" enctype="multipart/form-data">
     <div class="title form-group">
         <label for="title">Event Name: </label>
@@ -17,12 +18,9 @@
     <div class="category form-group">
         <label for="category">Category: </label>
         <select class="form-control" id="category" name="category">
-            <option value="cultural">Cultural</option>
-            <option value="sports">Sports</option>
-            <option value="music">Music</option>
-            <option value="faculty">Faculty</option>
-            <option value="academic">Academic</option>
-            <option value="others" selected>Others</option>
+            <% for (var i = 0; i < categories.length; i++) { %>
+                <option value="<%= categories[i] %>"><%= capitalize(categories[i]) %></option>
+            <% } %>
         </select>
     </div>
 
@@ -56,3 +54,5 @@
     }
     </script>
 </form>
+
+<% include footer.ejs %>
