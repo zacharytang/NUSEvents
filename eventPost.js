@@ -6,7 +6,7 @@ var schema = new mongoose.Schema({
     content: String,
     organiser: {
         type: String,
-        default: "NUS Computing Club" //Set to default for Computing Club
+        default: "None"
     },
     date: {
         type: Date,
