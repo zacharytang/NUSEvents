@@ -1,38 +1,39 @@
 <% include header.ejs %>
 
-<form method="post" id="new_user" enctype="multipart/form-data">
-    <div class="username form-group">
-        <label for="username">Username: </label>
-        <input type="text" class="form-control" id="username" name="username">
-    </div>
+    <form method="post" id="new_user" enctype="multipart/form-data">
+        <div class="username form-group">
+            <label for="username">Username: </label>
+            <input type="text" class="form-control" id="username" name="username">
+        </div>
+
+        <div class="organisation form-group">
+            <label for="organisation">Organisation: </label>
+            <input type="text" class="form-control" id="organisation" name="organisation">
+        </div>
+
+        <div class="password form-group">
+            <label for="password">Password </label>
+            <input type="password" class="form-control" id="password" name="password">
+        </div>
+
+        <input type="button" onclick="submitFormHandler()" value="Sign Up" class="btn btn-primary" />
+        <!-- Form handler to check if fields are empty -->
+        <script type="text/javascript">
+            function submitFormHandler() {
+                var user = document.getElementById("new_user");
+                // Check form for empty fields
+                if (!(/\S/.test(document.getElementsByName("username")[0].value))) {
+                    alert("Please enter a username!");
+                } else if (!(/\S/.test(document.getElementsByName("organisation")[0].value))) {
+                    alert("Please enter your organisation!");
+                } else if (!(/\S/.test(document.getElementsByName("password")[0].value))) {
+                    alert("Please provide a password!");
+                } else {
+                    user.submit();
+                }
+            }
+        </script>
+    </form>
+
     
-    <div class="organisation form-group">
-        <label for="organisation">Organisation: </label>
-        <input type="text" class="form-control" id="organisation" name="organisation">
-    </div>
-
-    <div class="password form-group">
-        <label for="password">Password </label>
-        <input type="text" class="form-control" id="password" name="password">
-    </div>
-
-    <input type="button" onclick="submitFormHandler()" value="Submit Event" class="btn btn-primary"/>
-    <!-- Form handler to check if fields are empty -->
-    <script type="text/javascript">
-    function submitFormHandler() {
-        var user = document.getElementById("new_user");
-
-        // Check form for empty fields
-        if (!(/\S/.test(document.getElementsByName("username")[0].value))) {
-            alert("Please enter a username!");
-        } else if (!(/\S/.test(document.getElementsByName("organisation")[0].value))) {
-            alert("Please enter your organisation!");
-        } else if (!(/\S/.test(document.getElementsByName("password")[0].value))) {
-            alert("Please provide a password!");
-        } else {
-            user.submit();
-        }
-    }
-    </script>
-</form>
-<% include footer.ejs %>
+    <% include footer.ejs %>

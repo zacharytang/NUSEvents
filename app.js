@@ -266,6 +266,32 @@ app.get("/post/:id", function (request, response) {
     });
 });
 
+// Sign up form
+app.get("/signup", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organisation;
+    } else {
+        username = null;
+    }
+    response.render("signUpForm.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+app.post("/signup",  multer({ storage: storage }).single('image'),  function (request, response) {
+    console.log(request.body.username)
+    Users.create({
+        name: request.body.username,
+        organiser: request.body.organisation,
+        password: request.body.password,
+    }, function (error, data) {
+        response.redirect("/users"); // redirects a request.
+    });
+});
+
 // New post form
 app.get("/newPost", restrict, function (request, response) {
     sess = request.session;
@@ -312,6 +338,7 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
             size: request.file.size
         };
     };
+    console.log(request.body.title);
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
@@ -325,31 +352,7 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
     });
 });
 
-// Sign up form
-app.get("/signup", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("signUpForm.ejs", {
-        user: username,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
 
-app.post("/signup", function (request, response) {
-    console.log(request.body.password)
-    Users.create({
-        name: request.body.username,
-        organiser: request.body.organisation,
-        password: request.body.password,
-    }, function (error, data) {
-        response.redirect("/users"); // redirects a request.
-    });
-});
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
