@@ -74,6 +74,19 @@ app.get("/post/:id", function(request, response) {
     });
 });
 
+// Search posts
+app.get("/search/:query", function(request, response){
+    var query = request.params.query;
+    EventPost.find({$text: {$search: query}}).sort({date: -1}).exec(function(error, data){
+        response.render("search.ejs", {
+            posts: data,
+            query: query,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
 // New post form
 app.get("/newPost", function(request, response){
     response.render("postForm.ejs", {

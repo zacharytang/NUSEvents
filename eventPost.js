@@ -28,4 +28,5 @@ var schema = new mongoose.Schema({
     }
 });
 
+schema.index({title: "text", content: "text", "organiser.type": "text"})
 module.exports = mongoose.model("EventPost", schema);
