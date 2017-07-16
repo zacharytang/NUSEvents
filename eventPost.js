@@ -1,5 +1,5 @@
 var mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:4000/myDatabase");
+mongoose.connect("mongodb://spaghetti:codecode@ds034807.mlab.com:34807/nus-events");
 
 var schema = new mongoose.Schema({
     title: String,
