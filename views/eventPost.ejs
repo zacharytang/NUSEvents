@@ -22,9 +22,11 @@
     </br>
     </br>
     <div>
+        <% if ( post.organiser == organiser ) { %>
         <p>
             <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + "/delete" %>';">Delete Post</button>
         </p>
+        <% } %>
     </div>
     </article>
 </div>

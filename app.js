@@ -1,6 +1,7 @@
 // [EXPRESS] Basic Express
 var express = require("express");
 var session = require('express-session');
+var hash = require('pbkdf2-password')()
 var app = express();
 
 /*
@@ -22,17 +23,6 @@ var fs = require("fs");
 var EventPost = require("./eventPost.js");
 var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.set("views", __dirname + "/views");
-app.set("view engine", "ejs");
-app.use(express.static("public"));
-app.use(session({ secret: 'ssshhhhh' }));
-
-
-
-
-
 var storage = multer.diskStorage({
     destination: function (request, file, cb) {
         cb(null, './public/uploads/');
@@ -44,6 +34,78 @@ var storage = multer.diskStorage({
         cb(null, filename);
     }
 });
+
+// config 
+
+app.set("views", __dirname + "/views");
+app.set("view engine", "ejs");
+
+// middleware
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use(session({
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+    secret: 'shhhh, very secret'
+}));
+
+// Session-persisted message middleware
+// I got clue what this is doing
+app.use(function (req, res, next) {
+    var err = req.session.error;
+    var msg = req.session.success;
+    delete req.session.error;
+    delete req.session.success;
+    res.locals.message = '';
+    if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
+    if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
+    next();
+});
+
+// dummy database, this one will be a Mongo Database collect
+var users = {
+    tj: { name: 'tj', organisation: 'NUS Computing Club'}
+};
+
+// when you create a user, generate a salt
+// and hash the password ('foobar' is the pass here)
+
+hash({ password: 'foobar' }, function (err, pass, salt, hash) {
+    if (err) throw err;
+    // store the salt & hash in the "db"
+    users.tj.salt = salt;
+    users.tj.hash = hash;
+});
+
+// Authenticate using our plain-object database of doom!
+
+function authenticate(name, pass, fn) {
+    if (!module.parent) console.log('authenticating %s:%s', name, pass);
+    var user = users[name];
+    // query the db for the given username
+    if (!user) return fn(new Error('cannot find user'));
+    // this one change to finding user in db.
+    // apply the same algorithm to the POSTed password, applying
+    // the hash against the pass / salt, if there is a match we
+    // found the user
+    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
+        if (err) return fn(err);
+        if (hash == user.hash) return fn(null, user);
+        fn(new Error('invalid password'));
+    });
+}
+
+function restrict(req, res, next) {
+    if (req.session.user) {
+        next();
+    } else {
+        req.session.error = 'Access denied!';
+        res.redirect('/notAuth');
+    }
+}
+
 
 // [EXPRESS]
 // Route definition is in the following structure
@@ -57,44 +119,83 @@ var storage = multer.diskStorage({
 // Home Page
 app.get("/", function (request, response) {
     sess = request.session;
-    if (sess.email) {
-        username = sess.email;
+    if (sess.user) {
         response.render("userhome.ejs", {
-            user: username,
+            user: sess.user.name,
             categories: settings.categories, //settings is like related to config.js or something.
             capitalize: capitalize
         });
+    } else {
+        response.render("home.ejs", {
+            user: null,
+            categories: settings.categories, //settings is like related to config.js or something.
+            capitalize: capitalize
+        })
+    };
+});
+
+/*app.post('/login', function (req, res) {
+    sess = req.session;
+    //In this we are assigning email to sess.email variable.
+    //email comes from HTML page.
+    sess.email = req.body.email;
+    res.end('done');
+});*/
+
+app.get('/login', function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
+    } else {
+        username = null;
     }
-    username = null;
-    response.render("home.ejs", {
+    response.render("login.ejs", {
         user: username,
         categories: settings.categories, //settings is like related to config.js or something.
         capitalize: capitalize
     });
 });
 
-app.get('/login', function (req, res) {
-    res.render("login.ejs", {
-        user: null,
-        categories: settings.categories, //settings is like related to config.js or something.
-        capitalize: capitalize
+app.post('/login', function (req, res) {
+    authenticate(req.body.username, req.body.password, function (err, user) {
+        if (user) {
+            // Regenerate session when signing in
+            // to prevent fixation
+            req.session.regenerate(function () {
+                // Store the user's primary key
+                // in the session store to be retrieved,
+                // or in this case the entire user object
+                req.session.user = user;
+                req.session.success = 'Authenticated as ' + user.name
+                    + ' click to <a href="/logout">logout</a>. '
+                    + ' You may now access <a href="/restricted">/restricted</a>.';
+                res.redirect('back');
+            });
+        } else {
+            req.session.error = 'Authentication failed, please check your '
+                + ' username and password.'
+                + ' (use "tj" and "foobar")';
+            res.redirect('/login');
+        }
     });
 });
 
-app.post('/login', function (req, res) {
-    sess = req.session;
-    //In this we are assigning email to sess.email variable.
-    //email comes from HTML page.
-    sess.email = req.body.email;
-    res.end('done');
+app.get('/logout', function (request, response) {
+    request.session.destroy(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            response.redirect('/');
+        }
+    });
 });
-
 
 
 // View by category
 app.get("/category/:categoryID", function (request, response) {
-    if (sess.email) {
-        username = sess.email;
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
     } else {
         username = null;
     }
@@ -114,10 +215,16 @@ app.get("/category/:categoryID", function (request, response) {
     });
 });
 
+app.get('/restricted', restrict, function (req, res) {
+    session = req.session;
+    res.send(session.user.name);
+});
+
 // View posters by category
 app.get("/catimageview/:categoryID", function (request, response) {
-    if (sess.email) {
-        username = sess.email;
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
     } else {
         username = null;
     }
@@ -135,10 +242,13 @@ app.get("/catimageview/:categoryID", function (request, response) {
 
 // View individual post
 app.get("/post/:id", function (request, response) {
-    if (sess.email) {
-        username = sess.email;
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
+        organisation = sess.user.organisation;
     } else {
         username = null;
+        organisation = null;
     }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
@@ -146,6 +256,7 @@ app.get("/post/:id", function (request, response) {
             response.render("404.ejs");
         } else {
             response.render("eventPost.ejs", {
+                organiser: organisation,
                 user: username,
                 categories: settings.categories,
                 capitalize: capitalize,
@@ -156,24 +267,31 @@ app.get("/post/:id", function (request, response) {
 });
 
 // New post form
-app.get("/newPost", function (request, response) {
+app.get("/newPost", restrict, function (request, response) {
     sess = request.session;
-    if (sess.email) {
-        response.render("postForm.ejs", {
-            user: sess.email,
-            maxChars: settings.maxChars, // To be manually set
-            categories: settings.categories,
-            capitalize: capitalize
-        });
+    if (sess.user) {
+        username = sess.user.name;
     } else {
-        response.redirect("/notAuth");
+        username = null;
     }
+    response.render("postForm.ejs", {
+        user: username,
+        maxChars: settings.maxChars, // To be manually set
+        categories: settings.categories,
+        capitalize: capitalize
+    });
 });
 
 // Not Authorized
 app.get("/notAuth", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
+    } else {
+        username = null;
+    }
     response.render("notAuthorised.ejs", {
-        user: null,
+        user: username,
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -197,6 +315,7 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
+        organiser: request.session.user.organisation, //THIS IS TIED TO USER ORGANISATION
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: hasImage,
@@ -208,8 +327,9 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
-    if (sess.email) {
-        username = sess.email;
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
     } else {
         username = null;
     }
@@ -221,15 +341,7 @@ app.get("/newPostAdmin", function (request, response) {
     });
 });
 
-app.get('/logout', function (request, response) {
-    request.session.destroy(function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect('/');
-        }
-    });
-});
+
 
 app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
     var hasImage = request.file ? true : false; //request.file is multer method
@@ -277,13 +389,13 @@ app.get('/post/:id/delete', function (request, response) {
 
 // Post deleted
 app.get("/deleted", function (request, response) {
-    if (sess.email) {
-        username = sess.email;
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.name;
     } else {
         username = null;
     }
     response.render("postDeleted.ejs", {
-        user: username,
         categories: settings.categories,
         capitalize: capitalize
     });
