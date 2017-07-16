@@ -168,7 +168,7 @@ function authenticate(inputname, pass, fn) {
     if (!module.parent) console.log('authenticating %s:%s', inputname, pass);
     //var user = users[name];
     Users.find({ name: inputname }, function (err, user) {
-        if (err) {
+        if (user.length == 0) {
             console.log("IF");
             return fn(new Error('cannot find user'));
         } else {
