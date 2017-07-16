@@ -74,14 +74,14 @@ var users = {
 // when you create a user, generate a salt
 // and hash the password ('foobar' is the pass here)
 
-hash({ password: 'foobar' }, function (err, pass, salt, hash) {
+/*hash({ password: 'foobar' }, function (err, pass, salt, hash) {
     if (err) throw err;
     // store the salt & hash in the "db"
 
     users.tj.salt = salt;
     users.tj.hash = hash;
 
-});
+});*/
 
 
 
@@ -160,8 +160,33 @@ app.post('/login', function (req, res) {
     });
 });
 
-// Authenticate using our plain-object database of doom!
+// Authenticate against database
 
+function authenticate(inputname, pass, fn) {
+    if (!module.parent) console.log('authenticating %s:%s', inputname, pass);
+    //var user = users[name];
+    Users.find({ name: inputname }, function (err, user) {
+        if (err) {
+            return fn(new Error('cannot find user'));
+        } else {
+            user = user;
+            usersalt = user.salt;
+            userhash = user.hash;
+            console.log(user);
+            console.log(user.password);
+        }
+        // apply the same algorithm to the POSTed password, applying
+        // the hash against the pass / salt, if there is a match we
+        // found the user
+        hash({ password: pass, salt: usersalt }, function (err, pass, salt, hash) {
+            if (err) return fn(err);
+            if (hash == userhash) return fn(null, user);
+            fn(new Error('invalid password'));
+        });
+    });
+}
+
+/*
 function authenticate(name, pass, fn) {
     if (!module.parent) console.log('authenticating %s:%s', name, pass);
     var user = users[name];
@@ -176,304 +201,317 @@ function authenticate(name, pass, fn) {
         if (hash == user.hash) return fn(null, user);
         fn(new Error('invalid password'));
     });
-}
+}*/
+
+
 
 app.get('/logout', function (request, response) {
-    request.session.destroy(function (err) {
-        if (err) {
-            console.log(err);
+            request.session.destroy(function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    response.redirect('/');
+                }
+            });
+        });
+
+
+    // View by category
+    app.get("/category/:categoryID", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
         } else {
-            response.redirect('/');
+            username = null;
         }
-    });
-});
-
-
-// View by category
-app.get("/category/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    // Route parameters 
-    // eg: if /category/All then req.params.categoryID == All 
-    var category = request.params.categoryID
-    // if category is not "all" then find all posts with the Category matching the CategoryID
-    // .exec is also mongoose. Zzz
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
-        response.render("index.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: username,
-            posts: data,
-            category: category,
-            categories: settings.categories,
-            capitalize: capitalize
-        });
-    });
-});
-
-app.get('/restricted', restrict, function (req, res) {
-    session = req.session;
-    res.send(session.user.name);
-    console.log("Hi, the salt is" + users.tj.salt);
-    console.log(users.tj.hash);
-});
-
-// View posters by category
-app.get("/catimageview/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    var category = request.params.categoryID
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
-        response.render("indeximg.ejs", {
-            user: username,
-            posts: data,
-            category: category,
-            categories: settings.categories,
-            capitalize: capitalize
-        });
-    });
-});
-
-// View individual post
-app.get("/post/:id", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-        organisation = sess.user.organisation;
-    } else {
-        username = null;
-        organisation = null;
-    }
-    EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
-        if (error || !post) {
-            response.status(404);
-            response.render("404.ejs");
-        } else {
-            response.render("eventPost.ejs", {
-                organiser: organisation,
+        // Route parameters 
+        // eg: if /category/All then req.params.categoryID == All 
+        var category = request.params.categoryID
+        // if category is not "all" then find all posts with the Category matching the CategoryID
+        // .exec is also mongoose. Zzz
+        EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+            response.render("index.ejs", { //response.render is an example of a response method. Renders a view template.
                 user: username,
+                posts: data,
+                category: category,
                 categories: settings.categories,
-                capitalize: capitalize,
-                post: post
-            })
-        }
+                capitalize: capitalize
+            });
+        });
     });
-});
 
-// Sign up form
-app.get("/signup", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("signUpForm.ejs", {
-        user: username,
-        categories: settings.categories,
-        capitalize: capitalize
+    app.get('/restricted', restrict, function (req, res) {
+        session = req.session;
+        res.send(session.user.name);
+        console.log("Hi, the salt is" + users.tj.salt);
+        console.log(users.tj.hash);
     });
-});
 
-app.post("/signup",  multer({ storage: storage }).single('image'),  function (request, response) {
-    console.log(request.body.username)
-    Users.create({
-        name: request.body.username,
-        organiser: request.body.organisation,
-        password: request.body.password,
-    }, function (error, data) {
-        response.redirect("/users"); // redirects a request.
-    });
-});
-
-// New post form
-app.get("/newPost", restrict, function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("postForm.ejs", {
-        user: username,
-        maxChars: settings.maxChars, // To be manually set
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-// Not Authorized
-app.get("/notAuth", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("notAuthorised.ejs", {
-        user: username,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-
-app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
-    var hasImage = request.file ? true : false;
-    if (hasImage) {
-        var image = { //image object
-            fieldname: request.file.fieldname,
-            originalname: request.file.originalname,
-            encoding: request.file.encoding,
-            mimetype: request.file.mimetype,
-            destination: request.file.destination,
-            filename: request.file.filename,
-            path: request.file.path,
-            size: request.file.size
-        };
-    };
-    console.log(request.body.title);
-    EventPost.create({
-        title: request.body.title,
-        content: request.body.content,
-        organiser: request.session.user.organisation, //THIS IS TIED TO USER ORGANISATION
-        category: request.body.category,
-        externalLink: request.body.externalLink,
-        hasImage: hasImage,
-        image: hasImage ? image : null,
-    }, function (error, data) {
-        response.redirect("/"); // redirects a request.
-    });
-});
-
-
-
-// Administrator post form (For Milestone 2 Demo)
-app.get("/newPostAdmin", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("postFormAdmin.ejs", {
-        user: username,
-        maxChars: 500, // To be manually set
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
-    var hasImage = request.file ? true : false; //request.file is multer method
-    if (hasImage) {
-        var image = {
-            fieldname: request.file.fieldname,
-            originalname: request.file.originalname,
-            encoding: request.file.encoding,
-            mimetype: request.file.mimetype,
-            destination: request.file.destination,
-            filename: request.file.filename,
-            path: request.file.path,
-            size: request.file.size
-        };
-    };
-    EventPost.create({
-        title: request.body.title,
-        organiser: request.body.organiser,
-        content: request.body.content,
-        category: request.body.category,
-        externalLink: request.body.externalLink,
-        hasImage: hasImage,
-        image: hasImage ? image : null,
-    }, function (error, data) {
-        response.redirect("/");
-    });
-});
-
-// Deleting a post
-app.get('/post/:id/delete', function (request, response) {
-    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
-        if (error || !postToDelete) {
-            return response.send(404);
-            response.render("404.ejs");
+    // View posters by category
+    app.get("/catimageview/:categoryID", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
         } else {
-            if (postToDelete.hasImage) {
-                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                    if (error) throw error;
-                });
+            username = null;
+        }
+        var category = request.params.categoryID
+        EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+            response.render("indeximg.ejs", {
+                user: username,
+                posts: data,
+                category: category,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        });
+    });
+
+    // View individual post
+    app.get("/post/:id", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+            organisation = sess.user.organisation;
+        } else {
+            username = null;
+            organisation = null;
+        }
+        EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
+            if (error || !post) {
+                response.status(404);
+                response.render("404.ejs");
+            } else {
+                response.render("eventPost.ejs", {
+                    organiser: organisation,
+                    user: username,
+                    categories: settings.categories,
+                    capitalize: capitalize,
+                    post: post
+                })
             }
-            response.redirect("/deleted");
-        }
+        });
     });
-});
 
-// Post deleted
-app.get("/deleted", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    response.render("postDeleted.ejs", {
-        user: username,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-// For testing purposes
-app.get('/deleteAll', function (request, response) {
-    EventPost.remove({}, function (err) {
-        if (err) {
-            console.log(err);
+    // Sign up form
+    app.get("/signup", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
         } else {
-            response.redirect("/");
+            username = null;
         }
-    });
-});
-
-// View by category
-app.get("/users", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organisation;
-    } else {
-        username = null;
-    }
-    Users.find().exec(function (error, data) {
-        response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
+        response.render("signUpForm.ejs", {
             user: username,
-            users: data,
             categories: settings.categories,
             capitalize: capitalize
         });
     });
-});
 
-// For testing purposes
-app.get('/deleteAllUsers', function (request, response) {
-    Users.remove({}, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect("/");
-        }
+    var usersalt;
+    var userhash;
+    app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
+        console.log(request.body.password)
+        hash({ password: request.body.password }, function (err, pass, salt, hash) {
+            if (err) throw err;
+            // store the salt & hash in the "db"
+
+            usersalt = salt;
+            userhash = hash;
+        });
+        Users.create({
+            name: request.body.username,
+            organiser: request.body.organisation,
+            password: request.body.password,
+            salt: usersalt,
+            hash: userhash,
+        }, function (error, data) {
+            response.redirect("/users"); // redirects a request.
+        });
     });
-});
+
+    // New post form
+    app.get("/newPost", restrict, function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+        } else {
+            username = null;
+        }
+        response.render("postForm.ejs", {
+            user: username,
+            maxChars: settings.maxChars, // To be manually set
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+
+    // Not Authorized
+    app.get("/notAuth", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+        } else {
+            username = null;
+        }
+        response.render("notAuthorised.ejs", {
+            user: username,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
 
 
-function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
+    app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
+        var hasImage = request.file ? true : false;
+        if (hasImage) {
+            var image = { //image object
+                fieldname: request.file.fieldname,
+                originalname: request.file.originalname,
+                encoding: request.file.encoding,
+                mimetype: request.file.mimetype,
+                destination: request.file.destination,
+                filename: request.file.filename,
+                path: request.file.path,
+                size: request.file.size
+            };
+        };
+        console.log(request.body.title);
+        EventPost.create({
+            title: request.body.title,
+            content: request.body.content,
+            organiser: request.session.user.organisation, //THIS IS TIED TO USER ORGANISATION
+            category: request.body.category,
+            externalLink: request.body.externalLink,
+            hasImage: hasImage,
+            image: hasImage ? image : null,
+        }, function (error, data) {
+            response.redirect("/"); // redirects a request.
+        });
+    });
 
 
 
-app.listen("3000");
+    // Administrator post form (For Milestone 2 Demo)
+    app.get("/newPostAdmin", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+        } else {
+            username = null;
+        }
+        response.render("postFormAdmin.ejs", {
+            user: username,
+            maxChars: 500, // To be manually set
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+
+    app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
+        var hasImage = request.file ? true : false; //request.file is multer method
+        if (hasImage) {
+            var image = {
+                fieldname: request.file.fieldname,
+                originalname: request.file.originalname,
+                encoding: request.file.encoding,
+                mimetype: request.file.mimetype,
+                destination: request.file.destination,
+                filename: request.file.filename,
+                path: request.file.path,
+                size: request.file.size
+            };
+        };
+        EventPost.create({
+            title: request.body.title,
+            organiser: request.body.organiser,
+            content: request.body.content,
+            category: request.body.category,
+            externalLink: request.body.externalLink,
+            hasImage: hasImage,
+            image: hasImage ? image : null,
+        }, function (error, data) {
+            response.redirect("/");
+        });
+    });
+
+    // Deleting a post
+    app.get('/post/:id/delete', function (request, response) {
+        EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+            if (error || !postToDelete) {
+                return response.send(404);
+                response.render("404.ejs");
+            } else {
+                if (postToDelete.hasImage) {
+                    fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                        if (error) throw error;
+                    });
+                }
+                response.redirect("/deleted");
+            }
+        });
+    });
+
+    // Post deleted
+    app.get("/deleted", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+        } else {
+            username = null;
+        }
+        response.render("postDeleted.ejs", {
+            user: username,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+
+    // For testing purposes
+    app.get('/deleteAll', function (request, response) {
+        EventPost.remove({}, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                response.redirect("/");
+            }
+        });
+    });
+
+    // View by category
+    app.get("/users", function (request, response) {
+        sess = request.session;
+        if (sess.user) {
+            username = sess.user.organisation;
+        } else {
+            username = null;
+        }
+        Users.find().exec(function (error, data) {
+            response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
+                user: username,
+                users: data,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        });
+    });
+
+    // For testing purposes
+    app.get('/deleteAllUsers', function (request, response) {
+        Users.remove({}, function (err) {
+            if (err) {
+                console.log(err);
+            } else {
+                response.redirect("/");
+            }
+        });
+    });
+
+
+    function capitalize(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+
+
+    app.listen("3000");

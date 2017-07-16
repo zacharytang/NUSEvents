@@ -8,8 +8,10 @@
     <thead>
         <tr>
             <th class="col-xs-4">User</th>
-            <th class="col-xs-4">Organisation</th>
-            <th class="col-xs-4">Password</th>
+            <th class="col-xs-2">Organisation</th>
+            <th class="col-xs-2">Password</th>
+            <th class="col-xs-2">Salt</th>
+            <th class="col-xs-2">Hash</th>
         </tr>
     </thead>
     <tbody>
@@ -18,6 +20,8 @@
                 <td><%= users[i].name %></td>
                 <td><%= users[i].organiser %></td>
                 <td><%= users[i].password %></td>
+                <td><%= users[i].salt %></td>
+                <td><%= users[i].hash %></td>
             </tr>
             <% } %>
         </tbody>
