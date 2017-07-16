@@ -7,5 +7,15 @@
 </footer>
 
 </body>
+<script>
+    var a = document.getElementById("newSearch");
+    a.addEventListener("submit",function(e) {
+        e.preventDefault();
+        var b = document.getElementById("searchText").value;
+        if (/\S/.test(b)) {
+            window.location.href = "/search/" + b;
+        }
+    });
+</script>
 
 </html>
