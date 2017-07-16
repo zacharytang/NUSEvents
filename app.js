@@ -21,6 +21,8 @@ var multer = require("multer");
 // file system for node.js
 var fs = require("fs");
 var EventPost = require("./eventPost.js");
+var Users = require("./users.js");
+
 var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
 var storage = multer.diskStorage({
@@ -323,6 +325,32 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
     });
 });
 
+// Sign up form
+app.get("/signup", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organisation;
+    } else {
+        username = null;
+    }
+    response.render("signUpForm.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+app.post("/signup", function (request, response) {
+    console.log(request.body.password)
+    Users.create({
+        name: request.body.username,
+        organiser: request.body.organisation,
+        password: request.body.password,
+    }, function (error, data) {
+        response.redirect("/users"); // redirects a request.
+    });
+});
+
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
     sess = request.session;
@@ -338,8 +366,6 @@ app.get("/newPostAdmin", function (request, response) {
         capitalize: capitalize
     });
 });
-
-
 
 app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
     var hasImage = request.file ? true : false; //request.file is multer method
@@ -394,6 +420,7 @@ app.get("/deleted", function (request, response) {
         username = null;
     }
     response.render("postDeleted.ejs", {
+        user: username,
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -410,8 +437,40 @@ app.get('/deleteAll', function (request, response) {
     });
 });
 
+// View by category
+app.get("/users", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organisation;
+    } else {
+        username = null;
+    }
+    Users.find().exec(function (error, data) {
+        response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
+            user: username,
+            users: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
+// For testing purposes
+app.get('/deleteAllUsers', function (request, response) {
+    Users.remove({}, function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            response.redirect("/");
+        }
+    });
+});
+
+
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+
 
 app.listen("3000");
