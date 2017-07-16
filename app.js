@@ -66,7 +66,7 @@ app.use(function (req, res, next) {
 
 // dummy database, this one will be a Mongo Database collect
 var users = {
-    tj: { name: 'tj', organisation: 'NUS Computing Club'}
+    tj: { name: 'tj', organisation: 'NUS Computing Club' }
 };
 
 // when you create a user, generate a salt
@@ -75,27 +75,13 @@ var users = {
 hash({ password: 'foobar' }, function (err, pass, salt, hash) {
     if (err) throw err;
     // store the salt & hash in the "db"
+
     users.tj.salt = salt;
     users.tj.hash = hash;
+
 });
 
-// Authenticate using our plain-object database of doom!
 
-function authenticate(name, pass, fn) {
-    if (!module.parent) console.log('authenticating %s:%s', name, pass);
-    var user = users[name];
-    // query the db for the given username
-    if (!user) return fn(new Error('cannot find user'));
-    // this one change to finding user in db.
-    // apply the same algorithm to the POSTed password, applying
-    // the hash against the pass / salt, if there is a match we
-    // found the user
-    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
-        if (err) return fn(err);
-        if (hash == user.hash) return fn(null, user);
-        fn(new Error('invalid password'));
-    });
-}
 
 function restrict(req, res, next) {
     if (req.session.user) {
@@ -172,6 +158,24 @@ app.post('/login', function (req, res) {
     });
 });
 
+// Authenticate using our plain-object database of doom!
+
+function authenticate(name, pass, fn) {
+    if (!module.parent) console.log('authenticating %s:%s', name, pass);
+    var user = users[name];
+    // query the db for the given username
+    if (!user) return fn(new Error('cannot find user'));
+    // this one change to finding user in db.
+    // apply the same algorithm to the POSTed password, applying
+    // the hash against the pass / salt, if there is a match we
+    // found the user
+    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
+        if (err) return fn(err);
+        if (hash == user.hash) return fn(null, user);
+        fn(new Error('invalid password'));
+    });
+}
+
 app.get('/logout', function (request, response) {
     request.session.destroy(function (err) {
         if (err) {
@@ -210,6 +214,8 @@ app.get("/category/:categoryID", function (request, response) {
 app.get('/restricted', restrict, function (req, res) {
     session = req.session;
     res.send(session.user.name);
+    console.log("Hi, the salt is" + users.tj.salt);
+    console.log(users.tj.hash);
 });
 
 // View posters by category
