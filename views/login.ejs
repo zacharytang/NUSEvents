@@ -43,17 +43,17 @@
         <%- message %>
             Try accessing <a href="/restricted">/restricted</a>, then authenticate with "tj" and "foobar".
             <form method="post" action="/login">
-                <p>
-                    <label>Username:</label>
-                    <input type="text" name="username">
-                </p>
-                <p>
-                    <label>Password:</label>
-                    <input type="text" name="password">
-                </p>
-                <p>
-                    <input type="submit" value="Login">
-                </p>
+                <div class="username form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" name="username">
+                </div>
+                <div class="password form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                </div>
+                <div>
+                    <input type="submit" value="Login" class="btn btn-primary">
+                </div>
             </form>
 
     </body>

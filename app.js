@@ -121,7 +121,7 @@ app.get("/", function (request, response) {
     sess = request.session;
     if (sess.user) {
         response.render("userhome.ejs", {
-            user: sess.user.name,
+            user: sess.user.organisation,
             categories: settings.categories, //settings is like related to config.js or something.
             capitalize: capitalize
         });
@@ -145,7 +145,7 @@ app.get("/", function (request, response) {
 app.get('/login', function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -195,7 +195,7 @@ app.get('/logout', function (request, response) {
 app.get("/category/:categoryID", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -224,7 +224,7 @@ app.get('/restricted', restrict, function (req, res) {
 app.get("/catimageview/:categoryID", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -244,7 +244,7 @@ app.get("/catimageview/:categoryID", function (request, response) {
 app.get("/post/:id", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
         organisation = sess.user.organisation;
     } else {
         username = null;
@@ -270,7 +270,7 @@ app.get("/post/:id", function (request, response) {
 app.get("/newPost", restrict, function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -286,7 +286,7 @@ app.get("/newPost", restrict, function (request, response) {
 app.get("/notAuth", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -329,7 +329,7 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
 app.get("/newPostAdmin", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
@@ -391,7 +391,7 @@ app.get('/post/:id/delete', function (request, response) {
 app.get("/deleted", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        username = sess.user.name;
+        username = sess.user.organisation;
     } else {
         username = null;
     }
