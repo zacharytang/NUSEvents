@@ -134,14 +134,6 @@ app.get("/", function (request, response) {
     };
 });
 
-/*app.post('/login', function (req, res) {
-    sess = req.session;
-    //In this we are assigning email to sess.email variable.
-    //email comes from HTML page.
-    sess.email = req.body.email;
-    res.end('done');
-});*/
-
 app.get('/login', function (request, response) {
     sess = request.session;
     if (sess.user) {
