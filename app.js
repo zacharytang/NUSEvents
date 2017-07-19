@@ -302,10 +302,17 @@ app.get("/post/:id", function (request, response) {
 });
 
 // Search posts
-app.get("/search/:query", function(request, response){
+app.get("/search/:query", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
     var query = request.params.query;
-    EventPost.find({$text: {$search: query}}).sort({date: -1}).exec(function(error, data){
+    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
         response.render("search.ejs", {
+            user: username,
             posts: data,
             query: query,
             categories: settings.categories,
