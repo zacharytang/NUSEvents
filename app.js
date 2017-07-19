@@ -1,17 +1,30 @@
+// [EXPRESS] Basic Express
 var express = require("express");
+var session = require('express-session');
+var hash = require('pbkdf2-password')()
 var app = express();
+
+/*
+:::Example of a basic route:::
+
+var express = require('express')
+var app = express()
+
+// respond with "hello world" when a GET request is made to the homepage
+app.get('/', function (req, res) {
+  res.send('hello world')
+})
+*/
+
 var ejs = require("ejs");
 var multer = require("multer");
-var fs = require ("fs");
+// file system for node.js
+var fs = require("fs");
 var EventPost = require("./eventPost.js");
+var Users = require("./users.js");
+
 var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
-app.set("views", __dirname + "/views");
-app.set("view engine", "ejs");
-app.use(express.static("public"));
-
 var storage = multer.diskStorage({
     destination: function (request, file, cb) {
         cb(null, './public/uploads/');
@@ -19,24 +32,214 @@ var storage = multer.diskStorage({
     filename: function (request, file, cb) {
         var originalname = file.originalname;
         var extension = originalname.split(".");
-        filename = Date.now() + '.' + extension[extension.length-1];
+        filename = Date.now() + '.' + extension[extension.length - 1];
         cb(null, filename);
     }
 });
 
+// config 
+
+app.set("views", __dirname + "/views");
+app.set("view engine", "ejs");
+
+// middleware
+
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static("public"));
+app.use(session({
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+    secret: 'shhhh, very secret'
+}));
+
+// Session-persisted message middleware
+// I got clue what this is doing
+app.use(function (req, res, next) {
+    var err = req.session.error;
+    var msg = req.session.success;
+    delete req.session.error;
+    delete req.session.success;
+    res.locals.message = '';
+    if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
+    if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
+    next();
+});
+
+// dummy database, this one will be a Mongo Database collect
+/*var users = {
+    tj: { name: 'tj', organisation: 'NUS Computing Club' }
+};*/
+
+// when you create a user, generate a salt
+// and hash the password ('foobar' is the pass here)
+
+/*hash({ password: 'foobar' }, function (err, pass, salt, hash) {
+    if (err) throw err;
+    // store the salt & hash in the "db"
+
+    users.tj.salt = salt;
+    users.tj.hash = hash;
+
+});*/
+
+
+
+function restrict(req, res, next) {
+    if (req.session.user) {
+        next();
+    } else {
+        req.session.error = 'Access denied!';
+        res.redirect('/notAuth');
+    }
+}
+
+
+// [EXPRESS]
+// Route definition is in the following structure
+// app.METHOD(PATH, HANDLER)
+// Where:
+// app is an instance of express
+// METHOD is a HTTP request method, in lowercase. 
+// >> See: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
+// HANDLERS IS THE FUNCTION EXECUTED WHEN THE ROUTE IS MATCHED.
+
 // Home Page
-app.get("/", function(request, response){
-    response.render("home.ejs", {
-        categories: settings.categories,
+app.get("/", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        console.log("session detected");
+        response.render("userhome.ejs", {
+            user: sess.user.organiser,
+            categories: settings.categories, //settings is like related to config.js or something.
+            capitalize: capitalize
+        });
+    } else {
+        console.log("no session");
+        response.render("home.ejs", {
+            user: null,
+            categories: settings.categories, //settings is like related to config.js or something.
+            capitalize: capitalize
+        })
+    };
+});
+
+app.get('/login', function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    response.render("login.ejs", {
+        user: username,
+        categories: settings.categories, //settings is like related to config.js or something.
         capitalize: capitalize
     });
 });
 
+app.post('/login', function (req, res) {
+    authenticate(req.body.username, req.body.password, function (err, user) {
+        if (user) {
+            console.log("authenticated as" + user.name);
+            // Regenerate session when signing in
+            // to prevent fixation
+            req.session.regenerate(function () {
+                // Store the user's primary key
+                // in the session store to be retrieved,
+                // or in this case the entire user object
+                req.session.user = user;
+                console.log("current session" + req.session.user);
+                req.session.success = 'Authenticated as ' + user.name
+                    + ' click to <a href="/logout">logout</a>. '
+                    + ' You may now access <a href="/restricted">/restricted</a>.';
+                res.redirect('back');
+            });
+        } else {
+            req.session.error = 'Authentication failed, please check your '
+            res.redirect('/login');
+        }
+    });
+});
+
+// Authenticate against database
+
+function authenticate(inputname, pass, fn) {
+    if (!module.parent) console.log('authenticating %s:%s', inputname, pass);
+    //var user = users[name];
+    Users.find({ name: inputname }, function (err, user) {
+        if (user.length == 0) {
+            console.log("IF");
+            return fn(new Error('cannot find user'));
+        } else {
+            console.log("ELSE");
+            user = user[0];
+            usersalt = user.salt;
+            userhash = user.hash;
+            console.log(user);
+            console.log(user.password);
+        }
+        // apply the same algorithm to the POSTed password, applying
+        // the hash against the pass / salt, if there is a match we
+        // found the user
+        hash({ password: pass, salt: usersalt }, function (err, pass, salt, hash) {
+            if (err) return fn(err);
+            console.log("hash is" + hash);
+            if (hash == userhash) {
+                console.log("hash matches");
+                return fn(null, user);
+            }
+            fn(new Error('invalid password'));
+        });
+    });
+}
+
+/*
+function authenticate(name, pass, fn) {
+    if (!module.parent) console.log('authenticating %s:%s', name, pass);
+    var user = users[name];
+    // query the db for the given username
+    if (!user) return fn(new Error('cannot find user'));
+    // this one change to finding user in db.
+    // apply the same algorithm to the POSTed password, applying
+    // the hash against the pass / salt, if there is a match we
+    // found the user
+    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
+        if (err) return fn(err);
+        if (hash == user.hash) return fn(null, user);
+        fn(new Error('invalid password'));
+    });
+}*/
+
+
+
+app.get('/logout', function (request, response) {
+    request.session.destroy(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            response.redirect('/');
+        }
+    });
+});
+
+
 // View by category
-app.get("/category/:categoryID", function(request, response){
+app.get("/category/:categoryID", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    // Route parameters 
+    // eg: if /category/All then req.params.categoryID == All 
     var category = request.params.categoryID
-    EventPost.find(category != "all" ? {category: category} : {}).sort({date: -1}).exec(function(error, data){
-        response.render("index.ejs", {
+    // if category is not "all" then find all posts with the Category matching the CategoryID
+    // .exec is also mongoose. Zzz
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+        response.render("index.ejs", { //response.render is an example of a response method. Renders a view template.
+            user: username,
             posts: data,
             category: category,
             categories: settings.categories,
@@ -45,11 +248,25 @@ app.get("/category/:categoryID", function(request, response){
     });
 });
 
+app.get('/restricted', restrict, function (req, res) {
+    session = req.session;
+    res.send(session.user.name);
+    console.log("Hi, the salt is" + users.tj.salt);
+    console.log(users.tj.hash);
+});
+
 // View posters by category
-app.get("/catimageview/:categoryID", function(request, response){
+app.get("/catimageview/:categoryID", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
     var category = request.params.categoryID
-    EventPost.find(category != "all" ? {category: category} : {}).sort({date: -1}).exec(function(error, data){
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
+            user: username,
             posts: data,
             category: category,
             categories: settings.categories,
@@ -59,13 +276,23 @@ app.get("/catimageview/:categoryID", function(request, response){
 });
 
 // View individual post
-app.get("/post/:id", function(request, response) {
-    EventPost.findById(request.params.id, function(error, post) {
+app.get("/post/:id", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+        organisation = sess.user.organiser;
+    } else {
+        username = null;
+        organisation = null;
+    }
+    EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
             response.status(404);
             response.render("404.ejs");
         } else {
             response.render("eventPost.ejs", {
+                organiser: organisation,
+                user: username,
                 categories: settings.categories,
                 capitalize: capitalize,
                 post: post
@@ -87,57 +314,129 @@ app.get("/search/:query", function(request, response){
     });
 });
 
+// Sign up form
+app.get("/signup", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    response.render("signUpForm.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+
+app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
+    console.log(request.body.password)
+    hash({ password: request.body.password }, function (err, pass, salt, hash) {
+        if (err) throw err;
+        // store the salt & hash in the "db"
+        console.log("salt generated " + salt);
+        console.log("hash generated " + hash);
+        Users.create({
+            name: request.body.username,
+            organiser: request.body.organisation,
+            password: request.body.password,
+            salt: salt,
+            hash: hash,
+        }, function (error, data) {
+            response.redirect("/users"); // redirects a request.
+        });
+
+    });
+});
+
 // New post form
-app.get("/newPost", function(request, response){
+app.get("/newPost", restrict, function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
     response.render("postForm.ejs", {
+        user: username,
         maxChars: settings.maxChars, // To be manually set
         categories: settings.categories,
         capitalize: capitalize
     });
 });
 
-app.post("/newPost", multer({storage: storage}).single('image'), function(request, response){
+// Not Authorized
+app.get("/notAuth", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    response.render("notAuthorised.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+
+app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
     var hasImage = request.file ? true : false;
     if (hasImage) {
-        var image = {
+        var image = { //image object
             fieldname: request.file.fieldname,
             originalname: request.file.originalname,
             encoding: request.file.encoding,
             mimetype: request.file.mimetype,
-            destination:request.file.destination,
+            destination: request.file.destination,
             filename: request.file.filename,
             path: request.file.path,
             size: request.file.size
         };
     };
+    console.log(request.body.title);
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
+        organiser: request.session.user.organiser, //THIS IS TIED TO USER ORGANISATION
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: hasImage,
         image: hasImage ? image : null,
-    }, function(error, data) {
-        response.redirect("/");
+    }, function (error, data) {
+        response.redirect("/"); // redirects a request.
     });
 });
+
+
 
 // Administrator post form (For Milestone 2 Demo)
-app.get("/newPostAdmin", function(request, response){
+app.get("/newPostAdmin", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
     response.render("postFormAdmin.ejs", {
-        maxChars: 500 // To be manually set
+        user: username,
+        maxChars: 500, // To be manually set
+        categories: settings.categories,
+        capitalize: capitalize
     });
 });
 
-app.post("/newPostAdmin", multer({storage: storage}).single('image'), function(request, response){
-    var hasImage = request.file ? true : false;
+app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
+    var hasImage = request.file ? true : false; //request.file is multer method
     if (hasImage) {
         var image = {
             fieldname: request.file.fieldname,
             originalname: request.file.originalname,
             encoding: request.file.encoding,
             mimetype: request.file.mimetype,
-            destination:request.file.destination,
+            destination: request.file.destination,
             filename: request.file.filename,
             path: request.file.path,
             size: request.file.size
@@ -151,20 +450,20 @@ app.post("/newPostAdmin", multer({storage: storage}).single('image'), function(r
         externalLink: request.body.externalLink,
         hasImage: hasImage,
         image: hasImage ? image : null,
-    }, function(error, data) {
+    }, function (error, data) {
         response.redirect("/");
     });
 });
 
 // Deleting a post
-app.get('/post/:id/delete', function(request, response) {
-    EventPost.findByIdAndRemove(request.params.id, function(error, postToDelete) {
+app.get('/post/:id/delete', function (request, response) {
+    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.send(404);
             response.render("404.ejs");
         } else {
             if (postToDelete.hasImage) {
-                fs.unlink("./public/uploads/" + postToDelete.image.filename, function(error) {
+                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
                     if (error) throw error;
                 });
             }
@@ -174,16 +473,23 @@ app.get('/post/:id/delete', function(request, response) {
 });
 
 // Post deleted
-app.get("/deleted", function(request, response){
+app.get("/deleted", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
     response.render("postDeleted.ejs", {
+        user: username,
         categories: settings.categories,
         capitalize: capitalize
     });
 });
 
 // For testing purposes
-app.get('/deleteAll', function(request, response) {
-    EventPost.remove({}, function(err) {
+app.get('/deleteAll', function (request, response) {
+    EventPost.remove({}, function (err) {
         if (err) {
             console.log(err);
         } else {
@@ -192,8 +498,40 @@ app.get('/deleteAll', function(request, response) {
     });
 });
 
+// View by category
+app.get("/users", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    Users.find().exec(function (error, data) {
+        response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
+            user: username,
+            users: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
+// For testing purposes
+app.get('/deleteAllUsers', function (request, response) {
+    Users.remove({}, function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            response.redirect("/");
+        }
+    });
+});
+
+
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+
 
 app.listen("3000");
