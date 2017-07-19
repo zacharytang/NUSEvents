@@ -301,6 +301,19 @@ app.get("/post/:id", function (request, response) {
     });
 });
 
+// Search posts
+app.get("/search/:query", function(request, response){
+    var query = request.params.query;
+    EventPost.find({$text: {$search: query}}).sort({date: -1}).exec(function(error, data){
+        response.render("search.ejs", {
+            posts: data,
+            query: query,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
 // Sign up form
 app.get("/signup", function (request, response) {
     sess = request.session;
@@ -335,7 +348,6 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
         });
 
     });
-
 });
 
 // New post form
