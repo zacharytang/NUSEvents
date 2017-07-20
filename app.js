@@ -280,7 +280,8 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
         Users.create({
             name: request.body.username,
             organiser: request.body.organisation,
-            password: request.body.password,
+            //password: request.body.password,
+            password: "DONOTSTOREPASSWORD",
             salt: salt,
             hash: hash,
         }, function (error, data) {
