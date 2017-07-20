@@ -24,8 +24,7 @@ var storage = multer.diskStorage({
     }
 });
 
-// config 
-
+// config
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
@@ -67,7 +66,7 @@ function restrict(req, res, next) {
 // app.METHOD(PATH, HANDLER)
 // Where:
 // app is an instance of express
-// METHOD is a HTTP request method, in lowercase. 
+// METHOD is a HTTP request method, in lowercase.
 // >> See: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
 // HANDLERS IS THE FUNCTION EXECUTED WHEN THE ROUTE IS MATCHED.
 
@@ -107,7 +106,6 @@ app.get('/login', function (request, response) {
 app.post('/login', function (req, res) {
     authenticate(req.body.username, req.body.password, function (err, user) {
         if (user) {
-            console.log("authenticated as" + user.name);
             // Regenerate session when signing in
             // to prevent fixation
             req.session.regenerate(function () {
@@ -143,9 +141,7 @@ function authenticate(inputname, pass, fn) {
         // found the user
         hash({ password: pass, salt: usersalt }, function (err, pass, salt, hash) {
             if (err) return fn(err);
-            console.log("hash is" + hash);
             if (hash == userhash) {
-                console.log("hash matches");
                 return fn(null, user);
             }
             fn(new Error('invalid password'));
@@ -172,8 +168,8 @@ app.get("/myOrg", restrict, function (request, response) {
     } else {
         username = null;
     }
-    // Route parameters 
-    // eg: if /category/All then req.params.categoryID == All 
+    // Route parameters
+    // eg: if /category/All then req.params.categoryID == All
     var organiser = sess.user.organiser;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
@@ -188,6 +184,28 @@ app.get("/myOrg", restrict, function (request, response) {
     });
 });
 
+// View by organiser
+app.get("/orgs/:orgID", function(request, response) {
+    var sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    var orgID = request.params.orgID;
+    Users.findById(orgID).exec(function(error, orgname) {
+        EventPost.find({organiserID: orgID}).sort({date: -1}).exec(function(error, data){
+            response.render("organisation.ejs", {
+                user: username,
+                posts: data,
+                orgname: orgname.organiser,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        });
+    });
+});
+
 // View by category
 app.get("/category/:categoryID", function (request, response) {
     sess = request.session;
@@ -196,9 +214,9 @@ app.get("/category/:categoryID", function (request, response) {
     } else {
         username = null;
     }
-    // Route parameters 
-    // eg: if /category/All then req.params.categoryID == All 
-    var category = request.params.categoryID
+    // Route parameters
+    // eg: if /category/All then req.params.categoryID == All
+    var category = request.params.categoryID;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
@@ -245,7 +263,11 @@ app.get("/post/:id", function (request, response) {
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
             response.status(404);
-            response.render("404.ejs");
+            response.render("404.ejs", {
+                user: username,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         } else {
             response.render("eventPost.ejs", {
                 organiser: organisation,
@@ -293,7 +315,7 @@ app.get("/signup", function (request, response) {
     });
 });
 
-
+// Post a new user to DB
 app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
     console.log(request.body.password)
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
@@ -374,11 +396,11 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
             size: request.file.size
         };
     };
-    console.log(request.body.title);
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
         organiser: request.session.user.organiser, //THIS IS TIED TO USER ORGANISATION
+        organiserID: request.session.user._id,
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: hasImage,
@@ -436,7 +458,11 @@ app.get('/post/:id/delete', function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.send(404);
-            response.render("404.ejs");
+            response.render("404.ejs", {
+                user: username,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         } else {
             if (postToDelete.hasImage) {
                 fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
@@ -503,11 +529,8 @@ app.get('/deleteAllUsers', function (request, response) {
     });
 });
 
-
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-
 
 app.listen("3000");
