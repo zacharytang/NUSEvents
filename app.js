@@ -164,7 +164,7 @@ app.get('/logout', function (request, response) {
     });
 });
 
-// View by category
+// View organisation profile
 app.get("/myOrg", restrict, function (request, response) {
     sess = request.session;
     if (sess.user) {
