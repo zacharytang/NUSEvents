@@ -24,8 +24,7 @@ var storage = multer.diskStorage({
     }
 });
 
-// config 
-
+// config
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
@@ -67,16 +66,15 @@ function restrict(req, res, next) {
 // app.METHOD(PATH, HANDLER)
 // Where:
 // app is an instance of express
-// METHOD is a HTTP request method, in lowercase. 
+// METHOD is a HTTP request method, in lowercase.
 // >> See: https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Request_methods
 // HANDLERS IS THE FUNCTION EXECUTED WHEN THE ROUTE IS MATCHED.
 
 // Home Page
 app.get("/", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
+    if (request.session.user) {
         response.render("userhome.ejs", {
-            user: sess.user.organiser,
+            user: request.session.user.organiser,
             categories: settings.categories, //settings is related to config.js
             capitalize: capitalize
         });
@@ -91,12 +89,7 @@ app.get("/", function (request, response) {
 
 // Login Screen
 app.get('/login', function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("login.ejs", {
         user: username,
         categories: settings.categories, //settings is like related to config.js or something.
@@ -107,7 +100,6 @@ app.get('/login', function (request, response) {
 app.post('/login', function (req, res) {
     authenticate(req.body.username, req.body.password, function (err, user) {
         if (user) {
-            console.log("authenticated as" + user.name);
             // Regenerate session when signing in
             // to prevent fixation
             req.session.regenerate(function () {
@@ -143,9 +135,7 @@ function authenticate(inputname, pass, fn) {
         // found the user
         hash({ password: pass, salt: usersalt }, function (err, pass, salt, hash) {
             if (err) return fn(err);
-            console.log("hash is" + hash);
             if (hash == userhash) {
-                console.log("hash matches");
                 return fn(null, user);
             }
             fn(new Error('invalid password'));
@@ -166,14 +156,9 @@ app.get('/logout', function (request, response) {
 
 // View organisation profile
 app.get("/myOrg", restrict, function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
-    // Route parameters 
-    // eg: if /category/All then req.params.categoryID == All 
+    var username = request.session.user ? request.session.user.organiser : null;
+    // Route parameters
+    // eg: if /category/All then req.params.categoryID == All
     var organiser = sess.user.organiser;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
@@ -188,17 +173,29 @@ app.get("/myOrg", restrict, function (request, response) {
     });
 });
 
+// View by organiser
+app.get("/orgs/:orgID", function(request, response) {
+    var username = request.session.user ? request.session.user.organiser : null;
+    var orgID = request.params.orgID;
+    Users.findById(orgID).exec(function(error, orgname) {
+        EventPost.find({organiserID: orgID}).sort({date: -1}).exec(function(error, data){
+            response.render("organisation.ejs", {
+                user: username,
+                posts: data,
+                orgname: orgname.organiser,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        });
+    });
+});
+
 // View by category
 app.get("/category/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
-    // Route parameters 
-    // eg: if /category/All then req.params.categoryID == All 
-    var category = request.params.categoryID
+    var username = request.session.user ? request.session.user.organiser : null;
+    // Route parameters
+    // eg: if /category/All then req.params.categoryID == All
+    var category = request.params.categoryID;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
@@ -214,12 +211,7 @@ app.get("/category/:categoryID", function (request, response) {
 
 // View posters by category
 app.get("/catimageview/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     var category = request.params.categoryID
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
@@ -234,21 +226,24 @@ app.get("/catimageview/:categoryID", function (request, response) {
 
 // View individual post
 app.get("/post/:id", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-        organisation = sess.user.organiser;
+    var sess = request.session;
+    if (request.session.user) {
+        var username = request.session.user.organiser;
+        var organisation = request.session.user.organiser;
     } else {
-        username = null;
-        organisation = null;
+        username = organisation = null;
     }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
             response.status(404);
-            response.render("404.ejs");
+            response.render("404.ejs", {
+                user: username,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         } else {
             response.render("eventPost.ejs", {
-                organiser: organisation,
+                userOrg: organisation,
                 user: username,
                 categories: settings.categories,
                 capitalize: capitalize,
@@ -260,12 +255,7 @@ app.get("/post/:id", function (request, response) {
 
 // Search posts
 app.get("/search/:query", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     var query = request.params.query;
     EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
         response.render("search.ejs", {
@@ -280,12 +270,7 @@ app.get("/search/:query", function (request, response) {
 
 // Sign up form
 app.get("/signup", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("signUpForm.ejs", {
         user: username,
         categories: settings.categories,
@@ -293,14 +278,12 @@ app.get("/signup", function (request, response) {
     });
 });
 
-
+// Post a new user to DB
 app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
     console.log(request.body.password)
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
         if (err) throw err;
         // store the salt & hash in the "db"
-        console.log("salt generated " + salt);
-        console.log("hash generated " + hash);
         Users.create({
             name: request.body.username,
             organiser: request.body.organisation,
@@ -315,12 +298,7 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
 
 // Sign up success screen
 app.get("/signUpSuccess", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("signUpSuccess.ejs", {
         user: username,
         categories: settings.categories,
@@ -330,12 +308,7 @@ app.get("/signUpSuccess", function (request, response) {
 
 // New post form
 app.get("/newPost", restrict, function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postForm.ejs", {
         user: username,
         maxChars: settings.maxChars, // To be manually set
@@ -346,12 +319,7 @@ app.get("/newPost", restrict, function (request, response) {
 
 // Not Authorized
 app.get("/notAuth", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("notAuthorised.ejs", {
         user: username,
         categories: settings.categories,
@@ -374,11 +342,11 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
             size: request.file.size
         };
     };
-    console.log(request.body.title);
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
         organiser: request.session.user.organiser, //THIS IS TIED TO USER ORGANISATION
+        organiserID: request.session.user._id,
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: hasImage,
@@ -390,15 +358,10 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postFormAdmin.ejs", {
         user: username,
-        maxChars: 500, // To be manually set
+        maxChars: settings.maxChars, // To be manually set
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -436,7 +399,11 @@ app.get('/post/:id/delete', function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.send(404);
-            response.render("404.ejs");
+            response.render("404.ejs", {
+                user: username,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         } else {
             if (postToDelete.hasImage) {
                 fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
@@ -450,12 +417,7 @@ app.get('/post/:id/delete', function (request, response) {
 
 // Post deleted
 app.get("/deleted", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postDeleted.ejs", {
         user: username,
         categories: settings.categories,
@@ -476,12 +438,7 @@ app.get('/deleteAll', function (request, response) {
 
 // View by category
 app.get("/users", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     Users.find().exec(function (error, data) {
         response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
             user: username,
@@ -503,11 +460,8 @@ app.get('/deleteAllUsers', function (request, response) {
     });
 });
 
-
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
-
-
 
 app.listen("3000");

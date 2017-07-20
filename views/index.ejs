@@ -20,7 +20,7 @@
         <% for (var i = 0; i < posts.length; i++) { %>
             <tr>
                 <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
-                <td><%= posts[i].organiser %></td>
+                <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><%= posts[i].organiser %></a></td>
                 <td><%= posts[i].content %></td>
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>
@@ -32,7 +32,7 @@
 
     <div>
     </br>
-    
+
     <% if (user) { %>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
     <% } %>

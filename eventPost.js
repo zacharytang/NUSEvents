@@ -8,6 +8,7 @@ var schema = new mongoose.Schema({
         type: String,
         default: "None"
     },
+    organiserID: String,
     date: {
         type: Date,
         default: Date.now
