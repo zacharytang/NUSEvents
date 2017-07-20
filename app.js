@@ -72,10 +72,9 @@ function restrict(req, res, next) {
 
 // Home Page
 app.get("/", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
+    if (request.session.user) {
         response.render("userhome.ejs", {
-            user: sess.user.organiser,
+            user: request.session.user.organiser,
             categories: settings.categories, //settings is related to config.js
             capitalize: capitalize
         });
@@ -90,12 +89,7 @@ app.get("/", function (request, response) {
 
 // Login Screen
 app.get('/login', function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("login.ejs", {
         user: username,
         categories: settings.categories, //settings is like related to config.js or something.
@@ -162,12 +156,7 @@ app.get('/logout', function (request, response) {
 
 // View organisation profile
 app.get("/myOrg", restrict, function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     // Route parameters
     // eg: if /category/All then req.params.categoryID == All
     var organiser = sess.user.organiser;
@@ -186,12 +175,7 @@ app.get("/myOrg", restrict, function (request, response) {
 
 // View by organiser
 app.get("/orgs/:orgID", function(request, response) {
-    var sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     var orgID = request.params.orgID;
     Users.findById(orgID).exec(function(error, orgname) {
         EventPost.find({organiserID: orgID}).sort({date: -1}).exec(function(error, data){
@@ -208,12 +192,7 @@ app.get("/orgs/:orgID", function(request, response) {
 
 // View by category
 app.get("/category/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     // Route parameters
     // eg: if /category/All then req.params.categoryID == All
     var category = request.params.categoryID;
@@ -232,12 +211,7 @@ app.get("/category/:categoryID", function (request, response) {
 
 // View posters by category
 app.get("/catimageview/:categoryID", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     var category = request.params.categoryID
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
@@ -252,13 +226,13 @@ app.get("/catimageview/:categoryID", function (request, response) {
 
 // View individual post
 app.get("/post/:id", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-        organisation = sess.user.organiser;
+    var sess = request.session;
+    if (request.session.user) {
+        username = request.session.user.organiser;
+        organisation = request.session.user.organiser;
+        userID = request.session.user._id;
     } else {
-        username = null;
-        organisation = null;
+        username = organisation = userID = null;
     }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
@@ -270,7 +244,7 @@ app.get("/post/:id", function (request, response) {
             });
         } else {
             response.render("eventPost.ejs", {
-                organiser: organisation,
+                userID: userID,
                 user: username,
                 categories: settings.categories,
                 capitalize: capitalize,
@@ -282,12 +256,7 @@ app.get("/post/:id", function (request, response) {
 
 // Search posts
 app.get("/search/:query", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     var query = request.params.query;
     EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
         response.render("search.ejs", {
@@ -302,12 +271,7 @@ app.get("/search/:query", function (request, response) {
 
 // Sign up form
 app.get("/signup", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("signUpForm.ejs", {
         user: username,
         categories: settings.categories,
@@ -321,8 +285,6 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
         if (err) throw err;
         // store the salt & hash in the "db"
-        console.log("salt generated " + salt);
-        console.log("hash generated " + hash);
         Users.create({
             name: request.body.username,
             organiser: request.body.organisation,
@@ -337,12 +299,7 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
 
 // Sign up success screen
 app.get("/signUpSuccess", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("signUpSuccess.ejs", {
         user: username,
         categories: settings.categories,
@@ -352,12 +309,7 @@ app.get("/signUpSuccess", function (request, response) {
 
 // New post form
 app.get("/newPost", restrict, function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postForm.ejs", {
         user: username,
         maxChars: settings.maxChars, // To be manually set
@@ -368,12 +320,7 @@ app.get("/newPost", restrict, function (request, response) {
 
 // Not Authorized
 app.get("/notAuth", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("notAuthorised.ejs", {
         user: username,
         categories: settings.categories,
@@ -412,15 +359,10 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postFormAdmin.ejs", {
         user: username,
-        maxChars: 500, // To be manually set
+        maxChars: settings.maxChars, // To be manually set
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -476,12 +418,7 @@ app.get('/post/:id/delete', function (request, response) {
 
 // Post deleted
 app.get("/deleted", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     response.render("postDeleted.ejs", {
         user: username,
         categories: settings.categories,
@@ -502,12 +439,7 @@ app.get('/deleteAll', function (request, response) {
 
 // View by category
 app.get("/users", function (request, response) {
-    sess = request.session;
-    if (sess.user) {
-        username = sess.user.organiser;
-    } else {
-        username = null;
-    }
+    var username = request.session.user ? request.session.user.organiser : null;
     Users.find().exec(function (error, data) {
         response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
             user: username,
