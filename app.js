@@ -297,9 +297,24 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
             salt: salt,
             hash: hash,
         }, function (error, data) {
-            response.redirect("/users"); // redirects a request.
+            response.redirect("/signUpSuccess"); // redirects a request.
         });
 
+    });
+});
+
+// Sign up success screen
+app.get("/signUpSuccess", function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    response.render("signUpSuccess.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
     });
 });
 
