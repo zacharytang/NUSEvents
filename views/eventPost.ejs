@@ -22,7 +22,7 @@
     </br>
     </br>
     <div>
-        <% if ( post.organiserID === userID ) { %>
+        <% if ( post.organiser === userOrg ) { %>
         <p>
             <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + "/delete" %>';">Delete Post</button>
         </p>

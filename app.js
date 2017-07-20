@@ -228,11 +228,10 @@ app.get("/catimageview/:categoryID", function (request, response) {
 app.get("/post/:id", function (request, response) {
     var sess = request.session;
     if (request.session.user) {
-        username = request.session.user.organiser;
-        organisation = request.session.user.organiser;
-        userID = request.session.user._id;
+        var username = request.session.user.organiser;
+        var organisation = request.session.user.organiser;
     } else {
-        username = organisation = userID = null;
+        username = organisation = null;
     }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
@@ -244,7 +243,7 @@ app.get("/post/:id", function (request, response) {
             });
         } else {
             response.render("eventPost.ejs", {
-                userID: userID,
+                userOrg: organisation,
                 user: username,
                 categories: settings.categories,
                 capitalize: capitalize,
