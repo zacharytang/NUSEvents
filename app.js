@@ -1,20 +1,7 @@
-// [EXPRESS] Basic Express
 var express = require("express");
 var session = require('express-session');
 var hash = require('pbkdf2-password')()
 var app = express();
-
-/*
-:::Example of a basic route:::
-
-var express = require('express')
-var app = express()
-
-// respond with "hello world" when a GET request is made to the homepage
-app.get('/', function (req, res) {
-  res.send('hello world')
-})
-*/
 
 var ejs = require("ejs");
 var multer = require("multer");
@@ -66,25 +53,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-// dummy database, this one will be a Mongo Database collect
-/*var users = {
-    tj: { name: 'tj', organisation: 'NUS Computing Club' }
-};*/
-
-// when you create a user, generate a salt
-// and hash the password ('foobar' is the pass here)
-
-/*hash({ password: 'foobar' }, function (err, pass, salt, hash) {
-    if (err) throw err;
-    // store the salt & hash in the "db"
-
-    users.tj.salt = salt;
-    users.tj.hash = hash;
-
-});*/
-
-
-
 function restrict(req, res, next) {
     if (req.session.user) {
         next();
@@ -93,7 +61,6 @@ function restrict(req, res, next) {
         res.redirect('/notAuth');
     }
 }
-
 
 // [EXPRESS]
 // Route definition is in the following structure
@@ -108,17 +75,15 @@ function restrict(req, res, next) {
 app.get("/", function (request, response) {
     sess = request.session;
     if (sess.user) {
-        console.log("session detected");
         response.render("userhome.ejs", {
             user: sess.user.organiser,
-            categories: settings.categories, //settings is like related to config.js or something.
+            categories: settings.categories, //settings is related to config.js
             capitalize: capitalize
         });
     } else {
-        console.log("no session");
         response.render("home.ejs", {
             user: null,
-            categories: settings.categories, //settings is like related to config.js or something.
+            categories: settings.categories,
             capitalize: capitalize
         })
     };
@@ -153,10 +118,10 @@ app.post('/login', function (req, res) {
                 req.session.success = 'Authenticated as ' + user.name
                     + ' click to <a href="/logout">logout</a>. '
                     + ' You may now access <a href="/restricted">/restricted</a>.';
-                res.redirect('back');
+                res.redirect('/');
             });
         } else {
-            req.session.error = 'Authentication failed, please check your '
+            req.session.error = 'Authentication failed, please check your username or password'
             res.redirect('/login');
         }
     });
@@ -193,25 +158,6 @@ function authenticate(inputname, pass, fn) {
         });
     });
 }
-
-/*
-function authenticate(name, pass, fn) {
-    if (!module.parent) console.log('authenticating %s:%s', name, pass);
-    var user = users[name];
-    // query the db for the given username
-    if (!user) return fn(new Error('cannot find user'));
-    // this one change to finding user in db.
-    // apply the same algorithm to the POSTed password, applying
-    // the hash against the pass / salt, if there is a match we
-    // found the user
-    hash({ password: pass, salt: user.salt }, function (err, pass, salt, hash) {
-        if (err) return fn(err);
-        if (hash == user.hash) return fn(null, user);
-        fn(new Error('invalid password'));
-    });
-}*/
-
-
 
 app.get('/logout', function (request, response) {
     request.session.destroy(function (err) {
