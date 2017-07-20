@@ -29,9 +29,13 @@
         </tbody>
     </table>
 
+
     <div>
     </br>
+    
+    <% if (user) { %>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
-</div>
+    <% } %>
+    </div>
 
 <% include footer.ejs %>

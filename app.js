@@ -153,6 +153,7 @@ function authenticate(inputname, pass, fn) {
     });
 }
 
+// Logout
 app.get('/logout', function (request, response) {
     request.session.destroy(function (err) {
         if (err) {
@@ -163,6 +164,29 @@ app.get('/logout', function (request, response) {
     });
 });
 
+// View organisation profile
+app.get("/myOrg", restrict, function (request, response) {
+    sess = request.session;
+    if (sess.user) {
+        username = sess.user.organiser;
+    } else {
+        username = null;
+    }
+    // Route parameters 
+    // eg: if /category/All then req.params.categoryID == All 
+    var organiser = sess.user.organiser;
+    // if category is not "all" then find all posts with the Category matching the CategoryID
+    // .exec is also mongoose. Zzz
+    EventPost.find( { organiser : organiser } ).sort({ date: -1 }).exec(function (error, data) {
+        response.render("organisation.ejs", { //response.render is an example of a response method. Renders a view template.
+            user: username,
+            posts: data,
+            orgname: organiser,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
 
 // View by category
 app.get("/category/:categoryID", function (request, response) {

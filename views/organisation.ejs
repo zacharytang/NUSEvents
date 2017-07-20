@@ -1,8 +1,9 @@
 <% include header.ejs %>
 
 <div class="container-fluid text-left">
-    <h1><small>Results for: </small><%= query %></h1>
+    <h1><small>All Events by </small><%= orgname %></h1>
 </div>
+
 
 <table class='table'>
     <thead>
@@ -27,11 +28,13 @@
         </tbody>
     </table>
 
+
     <div>
     </br>
+    
     <% if (user) { %>
     <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
     <% } %>
-</div>
+    </div>
 
 <% include footer.ejs %>
