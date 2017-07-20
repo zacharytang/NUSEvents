@@ -7,7 +7,6 @@ var schema = new mongoose.Schema({
         type: String,
         default: "None"
     },
-    password: String,
     salt: String,
     hash: String
 });
