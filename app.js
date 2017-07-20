@@ -89,6 +89,7 @@ app.get("/", function (request, response) {
     };
 });
 
+// Login Screen
 app.get('/login', function (request, response) {
     sess = request.session;
     if (sess.user) {
@@ -114,7 +115,6 @@ app.post('/login', function (req, res) {
                 // in the session store to be retrieved,
                 // or in this case the entire user object
                 req.session.user = user;
-                console.log("current session" + req.session.user);
                 req.session.success = 'Authenticated as ' + user.name
                     + ' click to <a href="/logout">logout</a>. ';
                 res.redirect('/');
@@ -127,21 +127,16 @@ app.post('/login', function (req, res) {
 });
 
 // Authenticate against database
-
 function authenticate(inputname, pass, fn) {
     if (!module.parent) console.log('authenticating %s:%s', inputname, pass);
     //var user = users[name];
     Users.find({ name: inputname }, function (err, user) {
         if (user.length == 0) {
-            console.log("IF");
             return fn(new Error('cannot find user'));
         } else {
-            console.log("ELSE");
             user = user[0];
             usersalt = user.salt;
             userhash = user.hash;
-            console.log(user);
-            console.log(user.password);
         }
         // apply the same algorithm to the POSTed password, applying
         // the hash against the pass / salt, if there is a match we
