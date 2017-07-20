@@ -116,8 +116,7 @@ app.post('/login', function (req, res) {
                 req.session.user = user;
                 console.log("current session" + req.session.user);
                 req.session.success = 'Authenticated as ' + user.name
-                    + ' click to <a href="/logout">logout</a>. '
-                    + ' You may now access <a href="/restricted">/restricted</a>.';
+                    + ' click to <a href="/logout">logout</a>. ';
                 res.redirect('/');
             });
         } else {
@@ -192,13 +191,6 @@ app.get("/category/:categoryID", function (request, response) {
             capitalize: capitalize
         });
     });
-});
-
-app.get('/restricted', restrict, function (req, res) {
-    session = req.session;
-    res.send(session.user.name);
-    console.log("Hi, the salt is" + users.tj.salt);
-    console.log(users.tj.hash);
 });
 
 // View posters by category
@@ -349,7 +341,7 @@ app.get("/notAuth", function (request, response) {
     });
 });
 
-
+// New Event Post
 app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
     var hasImage = request.file ? true : false;
     if (hasImage) {
@@ -377,8 +369,6 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
         response.redirect("/"); // redirects a request.
     });
 });
-
-
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
