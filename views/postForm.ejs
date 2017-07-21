@@ -16,7 +16,7 @@
             <div class="form-group col-xs-6">
                 <label for="startdate">Start Date</label>
                 <div class="input-group date">
-                    <input type="date" class="form-control" id="startdate" />
+                    <input type="date" class="form-control" id="startdate" name="startdate" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -26,7 +26,7 @@
             <div class="form-group col-xs-6">
                 <label for="startdate">End Date</label>
                 <div class="input-group date">
-                    <input type="date" class="form-control" id="enddate" />
+                    <input type="date" class="form-control" id="enddate" name="enddate" />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -43,8 +43,8 @@
     <div class="category form-group">
         <label for="category">Category: </label>
         <select class="form-control" id="category" name="category" />
-        <% for (var i = 0; i < categories.length; i++) { %>
-            <option value="<%= categories[i] %>"><%= capitalize(categories[i]) %></option>
+            <% for (var i = 0; i < categories.length; i++) { %>
+                <option value="<%= categories[i] %>"><%= capitalize(categories[i]) %></option>
             <% } %>
         </select>
     </div>
