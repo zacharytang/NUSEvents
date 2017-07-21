@@ -52,13 +52,26 @@ app.use(function (req, res, next) {
     next();
 });
 
-function restrict(req, res, next) {
-    if (req.session.user) {
+function requireLogin(request, response, next) {
+    if (request.session.user) {
         next();
     } else {
-        req.session.error = 'Access denied!';
-        res.redirect('/notAuth');
+        request.session.error = "Access denied!";
+        response.redirect("/notauth");
     }
+}
+
+function requireLogout(request, response, next) {
+    if (!request.session.user) {
+        next();
+    } else {
+        request.session.error = "Access denied!";
+        response.redirect("/notauth");
+    }
+}
+
+function capitalize(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // [EXPRESS]
@@ -80,10 +93,9 @@ app.get("/", function (request, response) {
 });
 
 // Login Screen
-app.get('/login', function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
+app.get('/login', requireLogout, function (request, response) {
     response.render("login.ejs", {
-        user: username,
+        user: request.session.user ? request.session.user.organiser : null,
         categories: settings.categories, //settings is like related to config.js or something.
         capitalize: capitalize
     });
@@ -136,7 +148,7 @@ function authenticate(inputname, pass, fn) {
 }
 
 // Logout
-app.get('/logout', function (request, response) {
+app.get('/logout', requireLogin, function (request, response) {
     request.session.destroy(function (err) {
         if (err) {
             console.log(err);
@@ -147,18 +159,12 @@ app.get('/logout', function (request, response) {
 });
 
 // View organisation profile
-app.get("/myOrg", restrict, function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
-    // Route parameters
-    // eg: if /category/All then req.params.categoryID == All
-    var organiser = sess.user.organiser;
-    // if category is not "all" then find all posts with the Category matching the CategoryID
-    // .exec is also mongoose. Zzz
+app.get("/myorg", requireLogin, function (request, response) {
     EventPost.find( { organiser : organiser } ).sort({ date: -1 }).exec(function (error, data) {
         response.render("organisation.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: username,
+            user: request.session.user ? request.session.user.organiser : null,
             posts: data,
-            orgname: organiser,
+            orgname: request.session.user ? request.session.user.organiser : null,
             categories: settings.categories,
             capitalize: capitalize
         });
@@ -167,12 +173,10 @@ app.get("/myOrg", restrict, function (request, response) {
 
 // View by organiser
 app.get("/orgs/:orgID", function(request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
-    var orgID = request.params.orgID;
-    Users.findById(orgID).exec(function(error, orgname) {
+    Users.findById(request.params.orgID).exec(function(error, orgname) {
         EventPost.find({organiserID: orgID}).sort({date: -1}).exec(function(error, data){
             response.render("organisation.ejs", {
-                user: username,
+                user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
                 orgname: orgname.organiser,
                 categories: settings.categories,
@@ -184,7 +188,6 @@ app.get("/orgs/:orgID", function(request, response) {
 
 // View by category
 app.get("/category/:categoryID", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
     // Route parameters
     // eg: if /category/All then req.params.categoryID == All
     var category = request.params.categoryID;
@@ -192,7 +195,7 @@ app.get("/category/:categoryID", function (request, response) {
     // .exec is also mongoose. Zzz
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
         response.render("index.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: username,
+            user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             category: category,
             categories: settings.categories,
@@ -203,11 +206,10 @@ app.get("/category/:categoryID", function (request, response) {
 
 // View posters by category
 app.get("/catimageview/:categoryID", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
     var category = request.params.categoryID
     EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
-            user: username,
+            user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             category: category,
             categories: settings.categories,
@@ -218,7 +220,6 @@ app.get("/catimageview/:categoryID", function (request, response) {
 
 // View individual post
 app.get("/post/:id", function (request, response) {
-    var sess = request.session;
     if (request.session.user) {
         var username = request.session.user.organiser;
         var organisation = request.session.user.organiser;
@@ -247,11 +248,10 @@ app.get("/post/:id", function (request, response) {
 
 // Search posts
 app.get("/search/:query", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
     var query = request.params.query;
     EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
         response.render("search.ejs", {
-            user: username,
+            user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             query: query,
             categories: settings.categories,
@@ -261,10 +261,9 @@ app.get("/search/:query", function (request, response) {
 });
 
 // Sign up form
-app.get("/signup", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
+app.get("/signup", requireLogout, function (request, response) {
     response.render("signUpForm.ejs", {
-        user: username,
+        user: null,
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -282,24 +281,23 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
             salt: salt,
             hash: hash,
         }, function (error, data) {
-            response.redirect("/signUpSuccess"); // redirects a request.
+            response.redirect("/signupsuccess"); // redirects a request.
         });
 
     });
 });
 
 // Sign up success screen
-app.get("/signUpSuccess", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
+app.get("/signupsuccess", requireLogout, function (request, response) {
     response.render("signUpSuccess.ejs", {
-        user: username,
+        user: null,
         categories: settings.categories,
         capitalize: capitalize
     });
 });
 
 // New post form
-app.get("/newPost", restrict, function (request, response) {
+app.get("/newPost", requireLogin, function (request, response) {
     var username = request.session.user ? request.session.user.organiser : null;
     response.render("postForm.ejs", {
         user: username,
@@ -310,10 +308,9 @@ app.get("/newPost", restrict, function (request, response) {
 });
 
 // Not Authorized
-app.get("/notAuth", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
+app.get("/notauth", function (request, response) {
     response.render("notAuthorised.ejs", {
-        user: username,
+        user: request.session.user ? request.session.user.organiser : null,
         categories: settings.categories,
         capitalize: capitalize
     });
@@ -347,6 +344,41 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
         response.redirect("/"); // redirects a request.
     });
 });
+
+// Deleting a post
+app.get('/post/:id/delete', function (request, response) {
+    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+        if (error || !postToDelete) {
+            return response.send(404);
+            response.render("404.ejs", {
+                user: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        } else {
+            if (postToDelete.hasImage) {
+                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                    if (error) throw error;
+                });
+            }
+            response.redirect("/deleted");
+        }
+    });
+});
+
+// Post deleted
+app.get("/deleted", function (request, response) {
+    var username = request.session.user ? request.session.user.organiser : null;
+    response.render("postDeleted.ejs", {
+        user: username,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+/*
+    For testing purposes only
+*/
 
 // Administrator post form (For Milestone 2 Demo)
 app.get("/newPostAdmin", function (request, response) {
@@ -386,38 +418,7 @@ app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function
     });
 });
 
-// Deleting a post
-app.get('/post/:id/delete', function (request, response) {
-    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
-        if (error || !postToDelete) {
-            return response.send(404);
-            response.render("404.ejs", {
-                user: username,
-                categories: settings.categories,
-                capitalize: capitalize
-            });
-        } else {
-            if (postToDelete.hasImage) {
-                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                    if (error) throw error;
-                });
-            }
-            response.redirect("/deleted");
-        }
-    });
-});
-
-// Post deleted
-app.get("/deleted", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
-    response.render("postDeleted.ejs", {
-        user: username,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-// For testing purposes
+// Delete all posts
 app.get('/deleteAll', function (request, response) {
     EventPost.remove({}, function (err) {
         if (err) {
@@ -441,7 +442,7 @@ app.get("/users", function (request, response) {
     });
 });
 
-// For testing purposes
+// Delete all users
 app.get('/deleteAllUsers', function (request, response) {
     Users.remove({}, function (err) {
         if (err) {
@@ -451,9 +452,5 @@ app.get('/deleteAllUsers', function (request, response) {
         }
     });
 });
-
-function capitalize(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 app.listen("3000");
