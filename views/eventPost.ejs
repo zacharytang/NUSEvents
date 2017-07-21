@@ -12,6 +12,12 @@
             <% if (post.image.filename) { %>
             <img class="post img-center" src="/uploads/<%= post.image.filename %>" alt="">
             <% } %>
+            <h5>
+                Date: <%= post.startdate %> 
+                <% if (post.enddate != post.startdate ) { %>
+                to <%= post.enddate %> 
+                <% } %>
+            </h5>
             <h5><%- post.content %></h5>
         </br>
         </br>
