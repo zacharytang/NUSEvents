@@ -42,9 +42,9 @@
 
     <div class="category form-group">
         <label for="category">Category: </label>
-        <select class="form-control" id="category" name="category">
-            <% for (var i = 0; i < categories.length; i++) { %>
-                <option value="<%= categories[i] %>"><%= capitalize(categories[i]) %></option>
+        <select class="form-control" id="category" name="category" />
+        <% for (var i = 0; i < categories.length; i++) { %>
+            <option value="<%= categories[i] %>"><%= capitalize(categories[i]) %></option>
             <% } %>
         </select>
     </div>
@@ -57,6 +57,26 @@
     <input type="button" onclick="submitFormHandler()" value="Submit Event" class="btn btn-primary"/>
     <!-- Form handler to check if fields are empty -->
     <script type="text/javascript">
+    var today = new Date().toISOString().split("T")[0];
+    document.getElementById("startdate").setAttribute("min", today);
+    document.getElementById("enddate").setAttribute("min", today);
+
+    document.getElementById("startdate").addEventListener("blur", function(error) {
+        error.preventDefault();
+        var date = document.getElementById("startdate").value;
+        if (date) {
+            document.getElementById("enddate").setAttribute("min", date);
+        };
+    });
+
+    document.getElementById("enddate").addEventListener("blur", function(error) {
+        error.preventDefault();
+        var date = document.getElementById("enddate").value;
+        if (date) {
+            document.getElementById("startdate").setAttribute("max", date);
+        };
+    });
+
     function submitFormHandler() {
         var post = document.getElementById("new_post");
         // Check link
@@ -72,7 +92,7 @@
         } else if (!(/\S/.test(document.getElementsByName("externalLink")[0].value))) {
             alert("Please provide an external link!");
         } else if (document.getElementById("startdate").value === "" ||
-                    document.getElementById("enddate").value === "") {
+        document.getElementById("enddate").value === "") {
             alert("Please enter start/end dates!")
         } else if (validate()) {
             post.submit();
