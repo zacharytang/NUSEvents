@@ -174,7 +174,7 @@ app.get("/myorg", requireLogin, function (request, response) {
 // View by organiser
 app.get("/orgs/:orgID", function(request, response) {
     Users.findById(request.params.orgID).exec(function(error, orgname) {
-        EventPost.find({organiserID: request.params.orgID}).sort({date: -1}).exec(function(error, data){
+        EventPost.find({organiser: orgname.organiser}).sort({date: -1}).exec(function(error, data){
             response.render("organisation.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
