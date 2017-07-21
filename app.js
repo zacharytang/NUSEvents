@@ -124,7 +124,6 @@ app.post('/login', function (req, res) {
 
 // Authenticate against database
 function authenticate(inputname, pass, fn) {
-    if (!module.parent) console.log('authenticating %s:%s', inputname, pass);
     //var user = users[name];
     Users.find({ name: inputname }, function (err, user) {
         if (user.length == 0) {
