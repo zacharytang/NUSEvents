@@ -11,6 +11,30 @@
         <textarea class="form-control" id="texteditor" name="content" maxlength=maxChars></textarea>
     </div>
 
+    <div class="form-group">
+        <div class="row">
+            <div class="form-group col-xs-6">
+                <label for="startdate">Start Date</label>
+                <div class="input-group date">
+                    <input type="date" class="form-control" id="startdate" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group col-xs-6">
+                <label for="startdate">End Date</label>
+                <div class="input-group date">
+                    <input type="date" class="form-control" id="enddate" />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="external form-group">
         <label for="external">External Link</label>
         <input type="text" class="form-control" id="external" name="externalLink">
@@ -36,10 +60,10 @@
     function submitFormHandler() {
         var post = document.getElementById("new_post");
         // Check link
-        var link = document.getElementsByName('externalLink')[0].value;
+        var link = document.getElementsByName("externalLink")[0].value;
         var result = link.split("//");
         if (result[0] != "https:" && result[0] != "http:") {
-            document.getElementsByName('externalLink')[0].value = "http://" + link;
+            document.getElementsByName("externalLink")[0].value = "http://" + link;
         }
 
         // Check form for empty fields
@@ -47,7 +71,10 @@
             alert("Please enter a title!");
         } else if (!(/\S/.test(document.getElementsByName("externalLink")[0].value))) {
             alert("Please provide an external link!");
-        } else if (validate()){
+        } else if (document.getElementById("startdate").value === "" ||
+                    document.getElementById("enddate").value === "") {
+            alert("Please enter start/end dates!")
+        } else if (validate()) {
             post.submit();
         }
     }
