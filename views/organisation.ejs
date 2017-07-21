@@ -4,12 +4,15 @@
     <h1><small>All Events by </small><%= orgname %></h1>
 </div>
 
+<button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/myorgimg';">Switch View</button>
+
 
 <table class='table'>
     <thead>
         <tr>
+            <th class="col-xs-1">Date</th>
             <th class="col-xs-2">Event</th>
-            <th class="col-xs-2">Organisation/Society</th>
+            <th class="col-xs-1">Organisation/Society</th>
             <th class="col-xs-6">Information</th>
             <th class="col-xs-1"></th>
             <th class="col-xs-1">Type</th>
@@ -17,9 +20,17 @@
     </thead>
     <tbody>
         <% for (var i = 0; i < posts.length; i++) { %>
-            <tr>
+            <tr>                
+                <td>
+                    <%= posts[i].startdate %>
+                        <% if (posts[i].enddate != posts[i].startdate ) { %>
+                            to
+                            </br>
+                            <%= posts[i].enddate %>
+                        <% } %>
+                </td>
                 <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
-                <td><%= posts[i].organiser %></td>
+                <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><%= posts[i].organiser %></a></td>
                 <td><%- posts[i].content %></td>
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>

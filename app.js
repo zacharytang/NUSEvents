@@ -156,6 +156,7 @@ app.get('/logout', requireLogin, function (request, response) {
     });
 });
 
+
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
     EventPost.find( { organiser : request.session.user.organiser } ).sort({ date: -1 }).exec(function (error, data) {
@@ -168,6 +169,20 @@ app.get("/myorg", requireLogin, function (request, response) {
         });
     });
 });
+
+// View organisation profile
+app.get("/myorgimg", requireLogin, function (request, response) {
+    EventPost.find( { organiser : request.session.user.organiser } ).sort({ date: -1 }).exec(function (error, data) {
+        response.render("organisationimg.ejs", { //response.render is an example of a response method. Renders a view template.
+            user: request.session.user ? request.session.user.organiser : null,
+            posts: data,
+            orgname: request.session.user ? request.session.user.organiser : null,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
 
 // View by organiser
 app.get("/orgs/:orgID", function(request, response) {
@@ -249,6 +264,20 @@ app.get("/search/:query", function (request, response) {
     var query = request.params.query;
     EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
         response.render("search.ejs", {
+            user: request.session.user ? request.session.user.organiser : null,
+            posts: data,
+            query: query,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
+// View posters by category
+app.get("/searchimg/:query", function (request, response) {
+    var query = request.params.query
+    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
+        response.render("searchimg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             query: query,
