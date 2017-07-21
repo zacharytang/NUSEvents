@@ -22,8 +22,15 @@
         plugins: [
             'lists hr link print preview pagebreak table'
         ],
-        toolbar: 'insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table pagebreak'
+        toolbar: 'insertfile undo redo | styleselect | fontsizeselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table pagebreak'
     });
+
+    function validate() {
+        if (!(/\S/.test(tinyMCE.get('texteditor').getContent()))) {
+            alert("Please enter some content!");
+            return false;
+        } else return true;
+    }
     </script>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 </head>

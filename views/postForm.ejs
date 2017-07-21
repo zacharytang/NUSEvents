@@ -45,11 +45,9 @@
         // Check form for empty fields
         if (!(/\S/.test(document.getElementsByName("title")[0].value))) {
             alert("Please enter a title!");
-        } else if (!(/\S/.test(document.getElementsByName("content")[0].value))) {
-            alert("Please enter some content!");
         } else if (!(/\S/.test(document.getElementsByName("externalLink")[0].value))) {
             alert("Please provide an external link!");
-        } else {
+        } else if (validate()){
             post.submit();
         }
     }
