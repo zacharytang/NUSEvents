@@ -40,7 +40,7 @@
                 <% if (user) { %>
                 <button class="btn navbar-btn" type="button" onClick="window.location.href='/newPost';">Post New Event</button>
                 <% } %>
-                
+
                 <ul class="nav navbar-nav">
                     <li><a href="/category/all">View All</a></li>
                     <% for (var i = 0; i < categories.length; i++) { %>
@@ -50,9 +50,9 @@
 
                 <ul class="nav navbar-nav navbar-right">
                     <% if (user) { %>
-                    <li><a href="/myOrg">Signed in as <b><%= user %></b></a></li>
+                    <li><a href="/myorg">Signed in as <b><%= user %></b></a></li>
                     <li><a href="/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
-                    <% } else if (user == null) { %>    
+                    <% } else if (user == null) { %>
                     <li><a href="/signup"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
                     <li><a href="/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                     <% } %>
