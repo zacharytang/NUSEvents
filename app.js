@@ -29,7 +29,6 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
 // middleware
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static("public"));
@@ -101,23 +100,23 @@ app.get('/login', requireLogout, function (request, response) {
     });
 });
 
-app.post('/login', function (req, res) {
-    authenticate(req.body.username, req.body.password, function (err, user) {
+app.post('/login', function (request, response) {
+    authenticate(request.body.username, request.body.password, function (error, user) {
         if (user) {
             // Regenerate session when signing in
             // to prevent fixation
-            req.session.regenerate(function () {
+            request.session.regenerate(function () {
                 // Store the user's primary key
                 // in the session store to be retrieved,
                 // or in this case the entire user object
-                req.session.user = user;
-                req.session.success = 'Authenticated as ' + user.name
+                request.session.user = user;
+                request.session.success = 'Authenticated as ' + user.name
                     + ' click to <a href="/logout">logout</a>. ';
-                res.redirect('/');
+                response.redirect('/');
             });
         } else {
-            req.session.error = 'Authentication failed, please check your username or password'
-            res.redirect('/login');
+            request.session.error = 'Authentication failed, please check your username or password'
+            response.redirect('/login');
         }
     });
 });
@@ -270,7 +269,6 @@ app.get("/signup", requireLogout, function (request, response) {
 
 // Post a new user to DB
 app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
-    console.log(request.body.password)
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
         if (err) throw err;
         // store the salt & hash in the "db"
@@ -280,7 +278,10 @@ app.post("/signup", multer({ storage: storage }).single('image'), function (requ
             salt: salt,
             hash: hash,
         }, function (error, data) {
-            response.redirect("/signupsuccess"); // redirects a request.
+            if (error) {
+                request.session.error = "Username is already taken!";
+                response.redirect("/signup");
+            } else response.redirect("/signupsuccess"); // redirects a request.
         });
 
     });
