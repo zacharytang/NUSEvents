@@ -72,19 +72,11 @@ function restrict(req, res, next) {
 
 // Home Page
 app.get("/", function (request, response) {
-    if (request.session.user) {
-        response.render("userhome.ejs", {
-            user: request.session.user.organiser,
-            categories: settings.categories, //settings is related to config.js
-            capitalize: capitalize
-        });
-    } else {
-        response.render("home.ejs", {
-            user: null,
-            categories: settings.categories,
-            capitalize: capitalize
-        })
-    };
+    response.render("home.ejs", {
+        user: request.session.user ? request.session.user.organiser : null,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
 });
 
 // Login Screen

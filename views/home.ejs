@@ -1,7 +1,7 @@
 <% include header.ejs %>
 
 <div class="container-fluid text-center">
-    <h1><small>Welcome to </small>NUS Events</h1>
+    <h1><small>Welcome <% if (user) { %><%= user + " " %><% } %>to </small>NUS Events</h1>
 </br>
 <div>
     <h4>What type of Events do you want to see?</h4>
@@ -19,8 +19,13 @@
     </div>
 
     <div>
-        <h4>Or do you want to Sign Up to post a new Event?</h4>
-        <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/signUp';">Sign Up</button> </p>
+        <% if (user) { %>
+            <h4>Or do you want to post a new Event?</h4>
+            <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
+        <% } else { %>
+            <h4>Or do you want to Sign Up to post a new Event?</h4>
+            <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/signUp';">Sign Up</button> </p>
+        <% } %>
     </div>
 
 </div>
