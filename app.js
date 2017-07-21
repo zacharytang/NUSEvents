@@ -429,7 +429,7 @@ app.get('/deleteAll', function (request, response) {
     });
 });
 
-// View by category
+// View users
 app.get("/users", function (request, response) {
     var username = request.session.user ? request.session.user.organiser : null;
     Users.find().exec(function (error, data) {
