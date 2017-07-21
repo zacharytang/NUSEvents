@@ -160,7 +160,7 @@ app.get('/logout', requireLogin, function (request, response) {
 
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
-    EventPost.find( { organiser : organiser } ).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find( { organiser : request.session.user.organiser } ).sort({ date: -1 }).exec(function (error, data) {
         response.render("organisation.ejs", { //response.render is an example of a response method. Renders a view template.
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -174,7 +174,7 @@ app.get("/myorg", requireLogin, function (request, response) {
 // View by organiser
 app.get("/orgs/:orgID", function(request, response) {
     Users.findById(request.params.orgID).exec(function(error, orgname) {
-        EventPost.find({organiserID: orgID}).sort({date: -1}).exec(function(error, data){
+        EventPost.find({organiserID: request.params.orgID}).sort({date: -1}).exec(function(error, data){
             response.render("organisation.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
