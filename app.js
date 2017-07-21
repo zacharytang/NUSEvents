@@ -335,6 +335,8 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
         content: request.body.content,
         organiser: request.session.user.organiser, //THIS IS TIED TO USER ORGANISATION
         organiserID: request.session.user._id,
+        startdate: request.body.startdate,
+        enddate: request.body.enddate,
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: hasImage,
@@ -379,44 +381,6 @@ app.get("/deleted", function (request, response) {
     For testing purposes only
 */
 
-// Administrator post form (For Milestone 2 Demo)
-app.get("/newPostAdmin", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
-    response.render("postFormAdmin.ejs", {
-        user: username,
-        maxChars: settings.maxChars, // To be manually set
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-app.post("/newPostAdmin", multer({ storage: storage }).single('image'), function (request, response) {
-    var hasImage = request.file ? true : false; //request.file is multer method
-    if (hasImage) {
-        var image = {
-            fieldname: request.file.fieldname,
-            originalname: request.file.originalname,
-            encoding: request.file.encoding,
-            mimetype: request.file.mimetype,
-            destination: request.file.destination,
-            filename: request.file.filename,
-            path: request.file.path,
-            size: request.file.size
-        };
-    };
-    EventPost.create({
-        title: request.body.title,
-        organiser: request.body.organiser,
-        content: request.body.content,
-        category: request.body.category,
-        externalLink: request.body.externalLink,
-        hasImage: hasImage,
-        image: hasImage ? image : null,
-    }, function (error, data) {
-        response.redirect("/");
-    });
-});
-
 // Delete all posts
 app.get('/deleteAll', function (request, response) {
     EventPost.remove({}, function (err) {
@@ -425,19 +389,6 @@ app.get('/deleteAll', function (request, response) {
         } else {
             response.redirect("/");
         }
-    });
-});
-
-// View users
-app.get("/users", function (request, response) {
-    var username = request.session.user ? request.session.user.organiser : null;
-    Users.find().exec(function (error, data) {
-        response.render("users.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: username,
-            users: data,
-            categories: settings.categories,
-            capitalize: capitalize
-        });
     });
 });
 

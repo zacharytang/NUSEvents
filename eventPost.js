@@ -13,6 +13,8 @@ var schema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+    startdate: String,
+    enddate: String,
     category: String,
     externalLink: String,
     hasImage: Boolean,
