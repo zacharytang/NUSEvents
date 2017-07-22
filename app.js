@@ -69,6 +69,15 @@ function requireLogout(request, response, next) {
     }
 }
 
+function requireAdmin(request, response, next) {
+    if (request.session.user.name == "Admin") {
+        next();
+    } else {
+        request.session.error = "Access denied!";
+        response.redirect("/notadmin");
+    }
+}
+
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -158,22 +167,26 @@ app.get('/logout', requireLogin, function (request, response) {
 
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
-    EventPost.find({ organiser: request.session.user.organiser }).sort({ date: -1 }).exec(function (error, data) {
-        response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: request.session.user ? request.session.user.organiser : null,
-            posts: data,
-            orgname: request.session.user ? request.session.user.organiser : null,
-            categories: settings.categories,
-            capitalize: capitalize
+    if (request.session.user.name == "Admin") {
+        response.redirect('/admin');
+    } else {
+        EventPost.find({ organiser: request.session.user.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+            response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
+                user: request.session.user ? request.session.user.organiser : null,
+                posts: data,
+                orgname: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         });
-    });
+    }
 });
 
 // View by organiser (Poster View)
 app.get("/orgs/:orgID/posters", function (request, response) {
     orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
             response.render("organisationimg.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -190,7 +203,7 @@ app.get("/orgs/:orgID/posters", function (request, response) {
 app.get("/orgs/:orgID", function (request, response) {
     orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
             response.render("organisationcon.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -206,7 +219,7 @@ app.get("/orgs/:orgID", function (request, response) {
 // View by category (Poster View)
 app.get("/category/:categoryID/posters", function (request, response) {
     var category = request.params.categoryID
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -224,7 +237,7 @@ app.get("/category/:categoryID", function (request, response) {
     var category = request.params.categoryID;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("indexcon.ejs", { //response.render is an example of a response method. Renders a view template.
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -268,7 +281,7 @@ app.get("/post/:id", function (request, response) {
 // Search posts (Poster View)
 app.get("/search/:query/posters", function (request, response) {
     var query = request.params.query
-    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } }).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("searchimg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -282,7 +295,7 @@ app.get("/search/:query/posters", function (request, response) {
 // Search posts
 app.get("/search/:query", function (request, response) {
     var query = request.params.query;
-    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } }).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("searchcon.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -345,6 +358,15 @@ app.get("/newPost", requireLogin, function (request, response) {
 // Not Authorized
 app.get("/notauth", function (request, response) {
     response.render("notAuthorised.ejs", {
+        user: request.session.user ? request.session.user.organiser : null,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+// Not Admin
+app.get("/notadmin", function (request, response) {
+    response.render("notAdmin.ejs", {
         user: request.session.user ? request.session.user.organiser : null,
         categories: settings.categories,
         capitalize: capitalize
@@ -414,11 +436,72 @@ app.get("/deleted", function (request, response) {
 });
 
 /*
-    For testing purposes only
+    Admin Stuff
 */
 
+// Deleting a user
+app.get('/admin/users/:id/delete', requireLogin, requireAdmin, function (request, response) {
+    Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
+        if (error || !userToDelete) {
+            return response.send(404);
+            response.render("404.ejs", {
+                user: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        } else {
+            response.redirect("/admin/users");
+        }
+    });
+});
+
+// View all users as Admin
+app.get("/admin/users", requireLogin, requireAdmin, function (request, response) {
+    Users.find().exec(function (error, data) {
+        response.render("adminusers.ejs", {
+            user: request.session.user ? request.session.user.organiser : null,
+            users: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
+// Deleting a post
+app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, response) {
+    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+        if (error || !postToDelete) {
+            return response.send(404);
+            response.render("404.ejs", {
+                user: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        } else {
+            if (postToDelete.hasImage) {
+                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                    if (error) throw error;
+                });
+            }
+            response.redirect("/admin");
+        }
+    });
+});
+
+// View all posts as Admin
+app.get("/admin", requireLogin, requireAdmin, function (request, response) {
+    EventPost.find({}).sort({ startdate: 1 }).exec(function (error, data) {
+        response.render("admin.ejs", {
+            user: request.session.user ? request.session.user.organiser : null,
+            posts: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
 // Delete all posts
-app.get('/deleteAll', function (request, response) {
+app.get('/deleteAll', requireLogin, requireAdmin, function (request, response) {
     EventPost.remove({}, function (err) {
         if (err) {
             console.log(err);
@@ -429,7 +512,7 @@ app.get('/deleteAll', function (request, response) {
 });
 
 // Delete all users
-app.get('/deleteAllUsers', function (request, response) {
+app.get('/deleteAllUsers', requireLogin, requireAdmin, function (request, response) {
     Users.remove({}, function (err) {
         if (err) {
             console.log(err);
