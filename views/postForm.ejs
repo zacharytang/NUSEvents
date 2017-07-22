@@ -61,32 +61,40 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
     if (!Modernizr.inputtypes.date) {
-        console.log("nope");
         $('input[type=date]').datepicker({
             // Consistent format with the HTML5 picker
-            dateFormat: 'yy-mm-dd'
+            dateFormat: 'yy-mm-dd',
+            minDate: 0
+        });
+
+        $("#startdate").datepicker("option", "onClose", function() {
+            var date = $("#startdate").datepicker("getDate");
+            if (date) {
+                 $("#enddate").datepicker("option", "minDate", date);
+             }
+        });
+
+        $("#enddate").datepicker("option", "onClose", function() {
+            var date = $("#enddate").datepicker("getDate");
+            if (date) $("#startdate").datepicker("option", "maxDate", date);
+        });
+    } else {
+        var today = new Date().toISOString().split("T")[0];
+        document.getElementById("startdate").setAttribute("min", today);
+        document.getElementById("enddate").setAttribute("min", today);
+
+        document.getElementById("startdate").addEventListener("blur", function(error) {
+            error.preventDefault();
+            var date = document.getElementById("startdate").value;
+            if (date) document.getElementById("enddate").setAttribute("min", date);
+        });
+
+        document.getElementById("enddate").addEventListener("blur", function(error) {
+            error.preventDefault();
+            var date = document.getElementById("enddate").value;
+            if (date) document.getElementById("startdate").setAttribute("max", date);
         });
     }
-
-    var today = new Date().toISOString().split("T")[0];
-    document.getElementById("startdate").setAttribute("min", today);
-    document.getElementById("enddate").setAttribute("min", today);
-
-    document.getElementById("startdate").addEventListener("blur", function(error) {
-        error.preventDefault();
-        var date = document.getElementById("startdate").value;
-        if (date) {
-            document.getElementById("enddate").setAttribute("min", date);
-        };
-    });
-
-    document.getElementById("enddate").addEventListener("blur", function(error) {
-        error.preventDefault();
-        var date = document.getElementById("enddate").value;
-        if (date) {
-            document.getElementById("startdate").setAttribute("max", date);
-        };
-    });
 
     function submitFormHandler() {
         var post = document.getElementById("new_post");
