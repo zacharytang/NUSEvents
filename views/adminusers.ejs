@@ -1,0 +1,42 @@
+<% include header.ejs %>
+
+<div class="container-fluid text-left">
+    <h1>Users</h1>
+</div>
+
+<div class="btn-group pull-right">
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/admin';">Posts</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/admin/users';">Users</button>
+</div>
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th class="col-xs-3">User</th>
+            <th class="col-xs-3">ID</th>
+            <th class="col-xs-3">Organisation</th>
+            <th class="col-xs-3">Delete User</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (var i = 0; i < users.length; i++) { %>
+            <tr>
+                <td><%= users[i].name %></td>
+                <td><%= users[i]._id %></td>
+                <td><%= users[i].organiser %></td>
+                <td>
+                    <% if (users[i].name != "Admin") { %> 
+                    <a href="<%= '/admin/users/' + users[i]._id + '/delete' %>"><span class="glyphicon glyphicon-trash"></span></a>
+                    <% } %>
+                </td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <div>
+    </br>
+    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
+</div>
+
+<% include footer.ejs %>

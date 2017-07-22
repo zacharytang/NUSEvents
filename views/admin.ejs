@@ -1,0 +1,53 @@
+<% include header.ejs %>
+
+<div class="container-fluid text-left">
+    <h1>Administator View</h1>
+</div>
+
+<div class="btn-group pull-right">
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/admin';">Posts</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/admin/users';">Users</button>
+</div>
+
+<table class='table'>
+    <thead>
+        <tr>
+            <th class="col-xs-2">Date</th>
+            <th class="col-xs-4">Event</th>
+            <th class="col-xs-2">Organisation/Society</th>
+            <th class="col-xs-1"></th>
+            <th class="col-xs-1"></th>
+            <th class="col-xs-2">Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for (var i = 0; i < posts.length; i++) { %>
+            <tr>                
+                <td>
+                    <%= posts[i].startdate %>
+                        <% if (posts[i].enddate != posts[i].startdate ) { %>
+                            <small>to</small>
+                            <%= posts[i].enddate %>
+                        <% } %>
+
+                </td>
+                <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
+                <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><%= posts[i].organiser %></a></td>
+                <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
+                <td><a href="<%= '/admin/' + posts[i]._id + '/delete' %>"><span class="glyphicon glyphicon-trash"></span></a></td>
+                <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+
+    <div>
+    </br>
+
+    <% if (user) { %>
+    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
+    <% } %>
+    </div>
+
+<% include footer.ejs %>

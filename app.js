@@ -69,6 +69,15 @@ function requireLogout(request, response, next) {
     }
 }
 
+function requireAdmin(request, response, next) {
+    if (request.session.user.name == "Admin") {
+        next();
+    } else {
+        request.session.error = "Access denied!";
+        response.redirect("/notadmin");
+    }
+}
+
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -158,15 +167,19 @@ app.get('/logout', requireLogin, function (request, response) {
 
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
-    EventPost.find({ organiser: request.session.user.organiser }).sort({ date: -1 }).exec(function (error, data) {
-        response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: request.session.user ? request.session.user.organiser : null,
-            posts: data,
-            orgname: request.session.user ? request.session.user.organiser : null,
-            categories: settings.categories,
-            capitalize: capitalize
+    if (request.session.user.name == "Admin") {
+        response.redirect('/admin');
+    } else {
+        EventPost.find({ organiser: request.session.user.organiser }).sort({ date: -1 }).exec(function (error, data) {
+            response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
+                user: request.session.user ? request.session.user.organiser : null,
+                posts: data,
+                orgname: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
         });
-    });
+    }
 });
 
 // View by organiser (Poster View)
@@ -351,6 +364,15 @@ app.get("/notauth", function (request, response) {
     });
 });
 
+// Not Admin
+app.get("/notadmin", function (request, response) {
+    response.render("notAdmin.ejs", {
+        user: request.session.user ? request.session.user.organiser : null,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
 // New Event Post
 app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
     var hasImage = request.file ? true : false;
@@ -414,11 +436,72 @@ app.get("/deleted", function (request, response) {
 });
 
 /*
-    For testing purposes only
+    Admin Stuff
 */
 
+// Deleting a user
+app.get('/admin/users/:id/delete', requireLogin, requireAdmin, function (request, response) {
+    Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
+        if (error || !userToDelete) {
+            return response.send(404);
+            response.render("404.ejs", {
+                user: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        } else {
+            response.redirect("/admin/users");
+        }
+    });
+});
+
+// View all users as Admin
+app.get("/admin/users", requireLogin, requireAdmin, function (request, response) {
+    Users.find().exec(function (error, data) {
+        response.render("adminusers.ejs", {
+            user: request.session.user ? request.session.user.organiser : null,
+            users: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
+// Deleting a post
+app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, response) {
+    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+        if (error || !postToDelete) {
+            return response.send(404);
+            response.render("404.ejs", {
+                user: request.session.user ? request.session.user.organiser : null,
+                categories: settings.categories,
+                capitalize: capitalize
+            });
+        } else {
+            if (postToDelete.hasImage) {
+                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                    if (error) throw error;
+                });
+            }
+            response.redirect("/admin");
+        }
+    });
+});
+
+// View all posts as Admin
+app.get("/admin", requireLogin, requireAdmin, function (request, response) {
+    EventPost.find({}).sort({ date: -1 }).exec(function (error, data) {
+        response.render("admin.ejs", {
+            user: request.session.user ? request.session.user.organiser : null,
+            posts: data,
+            categories: settings.categories,
+            capitalize: capitalize
+        });
+    });
+});
+
 // Delete all posts
-app.get('/deleteAll', function (request, response) {
+app.get('/deleteAll', requireLogin, requireAdmin, function (request, response) {
     EventPost.remove({}, function (err) {
         if (err) {
             console.log(err);
@@ -429,7 +512,7 @@ app.get('/deleteAll', function (request, response) {
 });
 
 // Delete all users
-app.get('/deleteAllUsers', function (request, response) {
+app.get('/deleteAllUsers', requireLogin, requireAdmin, function (request, response) {
     Users.remove({}, function (err) {
         if (err) {
             console.log(err);
