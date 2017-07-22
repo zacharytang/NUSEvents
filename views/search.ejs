@@ -4,7 +4,11 @@
     <h1><small>Results for: </small><%= query %></h1>
 </div>
 
-<button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/searchimg/<%=query%>';">Switch View</button>
+<div class="btn-group pull-right">
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/search/<%=query%>/condensed';">Condensed</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/search/<%=query%>/';">Expanded</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/search/<%=query%>/posters';">Poster View</button>
+</div>
 
 <table class='table'>
     <thead>

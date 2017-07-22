@@ -1,12 +1,13 @@
 <% include header.ejs %>
 
 <div class="container-fluid text-left">
-    <h1><%= capitalize(category) %></h1>
+    <h1><small>All Events by </small><%= orgname %></h1>
 </div>
 
 <div class="btn-group pull-right">
-    <button type="button" class="btn btn-primary" onClick="window.location.href='/category/<%=category%>';">Normal View</button>
-    <button type="button" class="btn btn-primary" onClick="window.location.href='/category/<%=category%>/posters';">Poster View</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/';">Condensed</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/category/all';">Expanded</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/myorg/posters';">Poster View</button>
 </div>
 
 <table class='table'>
@@ -33,11 +34,9 @@
                 </td>
                 <td><a href="<%= '/post/' + posts[i]._id %>"><b><%= posts[i].title %></b></a></td>
                 <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><b><%= posts[i].organiser %></b></a></td>
-
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><b><%= capitalize(posts[i].category) %></b></a></td>
             </tr>
-            <tr><td colspan="5"><%- posts[i].content %></td></tr>
             <% } %>
         </tbody>
     </table>
