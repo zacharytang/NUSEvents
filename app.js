@@ -7,8 +7,8 @@ var ejs = require("ejs");
 var multer = require("multer");
 // file system for node.js
 var fs = require("fs");
-var EventPost = require("./eventPost.js");
-var Users = require("./users.js");
+var EventPost = require("./js/eventPost.js");
+var Users = require("./js/users.js");
 
 var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
