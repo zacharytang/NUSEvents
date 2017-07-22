@@ -4,17 +4,19 @@
     <h1><%= capitalize(category) %></h1>
 </div>
 
-<button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/catimageview/<%=category%>';">Switch View</button>
+<div class="btn-group pull-right">
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/category/<%=category%>';">Normal View</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/category/<%=category%>/posters';">Poster View</button>
+</div>
 
 <table class='table'>
     <thead>
         <tr>
-            <th class="col-xs-1">Date</th>
-            <th class="col-xs-2">Event</th>
-            <th class="col-xs-1">Organisation/Society</th>
-            <th class="col-xs-6">Information</th>
+            <th class="col-xs-2">Date</th>
+            <th class="col-xs-5">Event</th>
+            <th class="col-xs-2">Organisation/Society</th>
             <th class="col-xs-1"></th>
-            <th class="col-xs-1">Type</th>
+            <th class="col-xs-2">Type</th>
         </tr>
     </thead>
     <tbody>
@@ -23,14 +25,13 @@
                 <td>
                     <%= posts[i].startdate %>
                         <% if (posts[i].enddate != posts[i].startdate ) { %>
-                            to
-                            </br>
+                            <small>to</small>
                             <%= posts[i].enddate %>
                         <% } %>
+
                 </td>
                 <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
                 <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><%= posts[i].organiser %></a></td>
-                <td><%- posts[i].content %></td>
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>
             </tr>

@@ -57,7 +57,17 @@
 
     <input type="button" onclick="submitFormHandler()" value="Submit Event" class="btn btn-primary"/>
     <!-- Form handler to check if fields are empty -->
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script type="text/javascript">
+    if (!Modernizr.inputtypes.date) {
+        console.log("nope");
+        $('input[type=date]').datepicker({
+            // Consistent format with the HTML5 picker
+            dateFormat: 'yy-mm-dd'
+        });
+    }
+
     var today = new Date().toISOString().split("T")[0];
     document.getElementById("startdate").setAttribute("min", today);
     document.getElementById("enddate").setAttribute("min", today);
