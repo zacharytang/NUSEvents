@@ -4,8 +4,14 @@
     <h1><small>All Events by </small><%= orgname %></h1>
 </div>
 
-<button class="btn btn-primary pull-right" type="button" onClick="window.location.href='/myorg';">Switch View</button>
+<div class="btn-group pull-right">
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/orgs/<%=orgID%>/';">Normal View</button>
+    <button type="button" class="btn btn-primary" onClick="window.location.href='/orgs/<%=orgID%>/posters';">Poster View</button>
+</div>
+<br>
+<br>
 
+<div>
 <% for (var i = 0; i < posts.length; i++) { %>
     <% if (posts[i].image.filename) { %>
   <a href="<%= '/post/' + posts[i]._id %>">
@@ -14,6 +20,7 @@
   </a>
   <% } %>
 <% } %>
+</div>
 
 <div>
     </br>

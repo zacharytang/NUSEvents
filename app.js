@@ -156,23 +156,10 @@ app.get('/logout', requireLogin, function (request, response) {
     });
 });
 
-// View organisation profile (Poster View)
-app.get("/myorg/posters", requireLogin, function (request, response) {
-    EventPost.find( { organiser : request.session.user.organiser } ).sort({ date: -1 }).exec(function (error, data) {
-        response.render("organisationimg.ejs", { //response.render is an example of a response method. Renders a view template.
-            user: request.session.user ? request.session.user.organiser : null,
-            posts: data,
-            orgname: request.session.user ? request.session.user.organiser : null,
-            categories: settings.categories,
-            capitalize: capitalize
-        });
-    });
-});
-
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
-    EventPost.find( { organiser : request.session.user.organiser } ).sort({ date: -1 }).exec(function (error, data) {
-        response.render("organisationcon.ejs", { //response.render is an example of a response method. Renders a view template.
+    EventPost.find({ organiser: request.session.user.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             orgname: request.session.user ? request.session.user.organiser : null,
@@ -183,13 +170,15 @@ app.get("/myorg", requireLogin, function (request, response) {
 });
 
 // View by organiser (Poster View)
-app.get("/orgs/:orgID/posters", function(request, response) {
-    Users.findById(request.params.orgID).exec(function(error, orgname) {
-        EventPost.find({organiser: orgname.organiser}).sort({date: -1}).exec(function(error, data){
+app.get("/orgs/:orgID/posters", function (request, response) {
+    orgID = request.params.orgID;
+    Users.findById(request.params.orgID).exec(function (error, orgname) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
             response.render("organisationimg.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
                 orgname: orgname.organiser,
+                orgID: orgID,
                 categories: settings.categories,
                 capitalize: capitalize
             });
@@ -198,13 +187,15 @@ app.get("/orgs/:orgID/posters", function(request, response) {
 });
 
 // View by organiser
-app.get("/orgs/:orgID", function(request, response) {
-    Users.findById(request.params.orgID).exec(function(error, orgname) {
-        EventPost.find({organiser: orgname.organiser}).sort({date: -1}).exec(function(error, data){
+app.get("/orgs/:orgID", function (request, response) {
+    orgID = request.params.orgID;
+    Users.findById(request.params.orgID).exec(function (error, orgname) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
             response.render("organisationcon.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
                 orgname: orgname.organiser,
+                orgID: orgID,
                 categories: settings.categories,
                 capitalize: capitalize
             });
