@@ -170,7 +170,7 @@ app.get("/myorg", requireLogin, function (request, response) {
     if (request.session.user.name == "Admin") {
         response.redirect('/admin');
     } else {
-        EventPost.find({ organiser: request.session.user.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        EventPost.find({ organiser: request.session.user.organiser }).sort({ startdate: -1 }).exec(function (error, data) {
             response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -186,7 +186,7 @@ app.get("/myorg", requireLogin, function (request, response) {
 app.get("/orgs/:orgID/posters", function (request, response) {
     orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: -1 }).exec(function (error, data) {
             response.render("organisationimg.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -203,7 +203,7 @@ app.get("/orgs/:orgID/posters", function (request, response) {
 app.get("/orgs/:orgID", function (request, response) {
     orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ date: -1 }).exec(function (error, data) {
+        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: -1 }).exec(function (error, data) {
             response.render("organisationcon.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -219,7 +219,7 @@ app.get("/orgs/:orgID", function (request, response) {
 // View by category (Poster View)
 app.get("/category/:categoryID/posters", function (request, response) {
     var category = request.params.categoryID
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: -1 }).exec(function (error, data) {
         response.render("indeximg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -237,7 +237,7 @@ app.get("/category/:categoryID", function (request, response) {
     var category = request.params.categoryID;
     // if category is not "all" then find all posts with the Category matching the CategoryID
     // .exec is also mongoose. Zzz
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: -1 }).exec(function (error, data) {
         response.render("indexcon.ejs", { //response.render is an example of a response method. Renders a view template.
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -281,7 +281,7 @@ app.get("/post/:id", function (request, response) {
 // Search posts (Poster View)
 app.get("/search/:query/posters", function (request, response) {
     var query = request.params.query
-    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } }).sort({ startdate: -1 }).exec(function (error, data) {
         response.render("searchimg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -295,7 +295,7 @@ app.get("/search/:query/posters", function (request, response) {
 // Search posts
 app.get("/search/:query", function (request, response) {
     var query = request.params.query;
-    EventPost.find({ $text: { $search: query } }).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } }).sort({ startdate: -1 }).exec(function (error, data) {
         response.render("searchcon.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -490,7 +490,7 @@ app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, resp
 
 // View all posts as Admin
 app.get("/admin", requireLogin, requireAdmin, function (request, response) {
-    EventPost.find({}).sort({ date: -1 }).exec(function (error, data) {
+    EventPost.find({}).sort({ startdate: -1 }).exec(function (error, data) {
         response.render("admin.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
