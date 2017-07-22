@@ -10,31 +10,32 @@
 <table class='table'>
     <thead>
         <tr>
-            <th class="col-xs-1">Date</th>
-            <th class="col-xs-2">Event</th>
-            <th class="col-xs-1">Organisation/Society</th>
-            <th class="col-xs-6">Information</th>
+            <th class="col-xs-2">Date</th>
+            <th class="col-xs-5">Event</th>
+            <th class="col-xs-2">Organisation/Society</th>
             <th class="col-xs-1"></th>
-            <th class="col-xs-1">Type</th>
+            <th class="col-xs-2">Type</th>
         </tr>
     </thead>
     <tbody>
         <% for (var i = 0; i < posts.length; i++) { %>
             <tr>                
                 <td>
+                    <b>
                     <%= posts[i].startdate %>
                         <% if (posts[i].enddate != posts[i].startdate ) { %>
                             to
-                            </br>
                             <%= posts[i].enddate %>
                         <% } %>
+                    </b>
                 </td>
-                <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
-                <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><%= posts[i].organiser %></a></td>
-                <td><%- posts[i].content %></td>
+                <td><a href="<%= '/post/' + posts[i]._id %>"><b><%= posts[i].title %></b></a></td>
+                <td><a href="<%= '/orgs/' + posts[i].organiserID %>"><b><%= posts[i].organiser %></b></a></td>
+
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
-                <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>
+                <td><a href="<%= '/category/' + posts[i].category %>"><b><%= capitalize(posts[i].category) %></b></a></td>
             </tr>
+            <tr><td colspan="5"><%- posts[i].content %></td></tr>
             <% } %>
         </tbody>
     </table>
