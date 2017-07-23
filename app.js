@@ -13,7 +13,6 @@ var settings = require("./config/config.js");
 var multer = require("multer");
 var multerS3 = require("multer-s3");
 var aws = require("aws-sdk");
-aws.config.loadFromPath("./config/s3_config.json");
 s3 = new aws.S3();
 var storage = multer({
     storage: multerS3({
