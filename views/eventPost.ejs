@@ -30,7 +30,7 @@
                         More Details: <a href="<%= post.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a>
                     </h5>
                     <% if ( post.organiser === userOrg ) { %>
-                        <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + "/delete" %>';">Delete Post</button>
+                        <button class="btn btn-primary" type="button" onClick="window.location.href='<%= post.id + '/delete' %>';">Delete Post</button>
                     <% } %>
                 </div>
 
