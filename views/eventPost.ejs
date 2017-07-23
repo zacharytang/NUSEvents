@@ -1,27 +1,24 @@
 <% include header.ejs %>
 
-    <% if (post.image.filename) { %>
-
         <div class="container-fluid text-left">
             <h1>
                 <%= post.title %>
             </h1>
 
-
             <div class="row">
+                <% if (post.image.filename) { %>
                 <div class="col-sm-6">
-                    <% if (post.image.filename) { %>
-                        <img class="post" src="/uploads/<%= post.image.filename %>" alt="">
-                        <% } %>
+                    <img class="post" src="/uploads/<%= post.image.filename %>" alt="">
                 </div>
-                <div class="col-sm-6">
+                <% } %>
+                <div class="<%= post.image.filename ? 'col-sm-6' : 'col-sm-12' %>">
                     <h3>
                         <b>Date:</b>
                         <%= post.startdate %>
                             <% if (post.enddate != post.startdate ) { %>
                                 to
-                                <%= post.enddate %>
-                                    <% } %>
+                            <%= post.enddate %>
+                        <% } %>
                     </h3>
                     <h5>
                         <%- post.content %>
@@ -30,51 +27,11 @@
                         More Details: <a href="<%= post.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a>
                     </h5>
                     <% if ( post.organiser === userOrg ) { %>
-                        <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + " /delete " %>';">Delete Post</button>
-                        <% } %>
+                        <button class="btn btn-primary" type="button" onClick="window.location.href='<%= post._id + '/delete' %>';">Delete Post</button>
+                    <% } %>
                 </div>
-
 
             </div>
         </div>
 
-        <% } else { %>
-
-            <div class="container-fluid text-left">
-                <h1>
-                    <%= post.title %>
-                </h1>
-
-
-                <div class="row">
-                    <div class="col-sm-12">
-                        <h3>
-                            <b>Date:</b>
-                            <%= post.startdate %>
-                                <% if (post.enddate != post.startdate ) { %>
-                                    to
-                                    <%= post.enddate %>
-                                        <% } %>
-                        </h3>
-                        <h5>
-                            <%- post.content %>
-                        </h5>
-                        <h5>
-                            More Details: <a href="<%= post.externalLink %>"><span class="glyphicon glyphicon-globe"></span></a>
-                        </h5>
-                        <% if ( post.organiser === userOrg ) { %>
-                            <button class="btn btn-primary" type="button" onClick="window.location.href='<%=post.id + " /delete " %>';">Delete Post</button>
-                            <% } %>
-                    </div>
-
-
-                </div>
-            </div>
-
-
-            <% } %>
-
-
-
-
-                <% include footer.ejs %>
+<% include footer.ejs %>
