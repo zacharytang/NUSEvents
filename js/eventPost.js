@@ -18,6 +18,7 @@ var schema = new mongoose.Schema({
     category: String,
     externalLink: String,
     hasImage: Boolean,
+    imageName: String,
     imageLink: String
 });
 

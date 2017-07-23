@@ -395,6 +395,7 @@ app.post("/newPost", storage.single("image"), function (request, response) {
         category: request.body.category,
         externalLink: request.body.externalLink,
         hasImage: request.file,
+        imageName: request.file ? request.file.key : null,
         imageLink: request.file ? request.file.location : null
     }, function (error, data) {
         response.redirect("/category/all"); // redirects a request.
