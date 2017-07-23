@@ -412,9 +412,9 @@ app.get('/post/:id/delete', function (request, response) {
             });
         } else {
             if (postToDelete.hasImage) {
-                s3.headObject({Key: postToDelete.imageName}, function(error, data) {
+                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        s3.deleteObject({Key: postToDelete.imageName}, function(error, data) {
+                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                             if (error) console.log(error, error.stack);
                         });
                     }
@@ -479,9 +479,9 @@ app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, resp
             });
         } else {
             if (postToDelete.hasImage) {
-                s3.headObject({Key: postToDelete.imageName}, function(error, data) {
+                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        s3.deleteObject({Key: postToDelete.imageName}, function(error, data) {
+                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                             if (error) console.log(error, error.stack);
                         });
                     }
