@@ -6,12 +6,12 @@
             </h1>
 
             <div class="row">
-                <% if (post.image.filename) { %>
+                <% if (post.hasImage) { %>
                 <div class="col-sm-6">
-                    <img class="post" src="/uploads/<%= post.image.filename %>" alt="">
+                    <img class="post" src="<%= post.imageLink %>" alt="">
                 </div>
                 <% } %>
-                <div class="<%= post.image.filename ? 'col-sm-6' : 'col-sm-12' %>">
+                <div class="<%= post.hasImage ? 'col-sm-6' : 'col-sm-12' %>">
                     <h3>
                         <b>Date:</b>
                         <%= post.startdate %>

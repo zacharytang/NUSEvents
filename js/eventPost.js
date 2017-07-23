@@ -18,15 +18,7 @@ var schema = new mongoose.Schema({
     category: String,
     externalLink: String,
     hasImage: Boolean,
-    image: {
-        fieldname: String,
-        originalname: String,
-        encoding: String,
-        mimetype: String,
-        filename: String,
-        size: Number,
-        uploaded_at: Date
-    }
+    imageLink: String
 });
 
 schema.index({title: "text", content: "text", "organiser.type": "text"})

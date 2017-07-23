@@ -385,16 +385,6 @@ app.get("/notadmin", function (request, response) {
 
 // New Event Post
 app.post("/newPost", storage.single("image"), function (request, response) {
-    var hasImage = request.file ? true : false;
-    if (hasImage) {
-        var image = { //image object
-            fieldname: request.file.fieldname,
-            originalname: request.file.originalname,
-            encoding: request.file.encoding,
-            mimetype: request.file.mimetype,
-            size: request.file.size
-        };
-    };
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
@@ -404,8 +394,8 @@ app.post("/newPost", storage.single("image"), function (request, response) {
         enddate: request.body.enddate,
         category: request.body.category,
         externalLink: request.body.externalLink,
-        hasImage: hasImage,
-        image: hasImage ? image : null,
+        hasImage: request.file,
+        imageLink: request.file ? request.file.location : null
     }, function (error, data) {
         response.redirect("/category/all"); // redirects a request.
     });
