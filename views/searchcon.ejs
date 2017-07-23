@@ -21,13 +21,13 @@
     </thead>
     <tbody>
         <% for (var i = 0; i < posts.length; i++) { %>
-            <tr>                
+            <tr>
                 <td>
                     <%= posts[i].startdate %>
-                        <% if (posts[i].enddate != posts[i].startdate ) { %>
-                            <small>to</small>
-                            <%= posts[i].enddate %>
-                        <% } %>
+                    <% if (posts[i].enddate != posts[i].startdate ) { %>
+                        <small>to</small>
+                        <%= posts[i].enddate %>
+                    <% } %>
 
                 </td>
                 <td><a href="<%= '/post/' + posts[i]._id %>"><%= posts[i].title %></a></td>
@@ -35,16 +35,8 @@
                 <td><a href="<%= posts[i].externalLink %>"><span class="glyphicon glyphicon-globe"></span></a></td>
                 <td><a href="<%= '/category/' + posts[i].category %>"><%= capitalize(posts[i].category) %></a></td>
             </tr>
-            <% } %>
-        </tbody>
-    </table>
-
-    <div>
-    </br>
-
-    <% if (user) { %>
-    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
-    <% } %>
-    </div>
+        <% } %>
+    </tbody>
+</table>
 
 <% include footer.ejs %>

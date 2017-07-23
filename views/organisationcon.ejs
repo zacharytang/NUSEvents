@@ -21,7 +21,7 @@
     </thead>
     <tbody>
         <% for (var i = 0; i < posts.length; i++) { %>
-            <tr>                
+            <tr>
                 <td>
                     <%= posts[i].startdate %>
                         <% if (posts[i].enddate != posts[i].startdate ) { %>
@@ -38,14 +38,5 @@
             <% } %>
         </tbody>
     </table>
-
-
-    <div>
-    </br>
-
-    <% if (user) { %>
-    <p> <button class="btn btn-primary" type="button" onClick="window.location.href='/newPost';">Post New Event</button> </p>
-    <% } %>
-    </div>
-
+    
 <% include footer.ejs %>

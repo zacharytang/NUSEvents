@@ -2,26 +2,34 @@ var express = require("express");
 var session = require('express-session');
 var hash = require('pbkdf2-password')()
 var app = express();
-
+var bodyParser = require("body-parser");
 var ejs = require("ejs");
-var multer = require("multer");
-// file system for node.js
-var fs = require("fs");
+
+// Schemas and file imports
 var EventPost = require("./js/eventPost.js");
 var Users = require("./js/users.js");
-
-var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
-var storage = multer.diskStorage({
-    destination: function (request, file, cb) {
-        cb(null, './public/uploads/');
-    },
-    filename: function (request, file, cb) {
-        var originalname = file.originalname;
-        var extension = originalname.split(".");
-        filename = Date.now() + '.' + extension[extension.length - 1];
-        cb(null, filename);
-    }
+
+var multer = require("multer");
+var multerS3 = require("multer-s3");
+var aws = require("aws-sdk");
+s3 = new aws.S3();
+var storage = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: "nusevents",
+        acl: "public-read",
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        metadata: function(request, file, cb) {
+            cb(null, {fieldname: file.fieldname});
+        },
+        key: function(request, file, cb) {
+            var originalname = file.originalname;
+            var extension = originalname.split(".");
+            filename = Date.now() + '.' + extension[extension.length - 1];
+            cb(null, filename);
+        },
+    })
 });
 
 // config
@@ -277,7 +285,6 @@ app.get("/post/:id", function (request, response) {
     });
 });
 
-
 // Search posts (Poster View)
 app.get("/search/:query/posters", function (request, response) {
     var query = request.params.query
@@ -316,7 +323,7 @@ app.get("/signup", requireLogout, function (request, response) {
 });
 
 // Post a new user to DB
-app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
+app.post("/signup", storage.single("image"), function (request, response) {
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
         if (err) throw err;
         // store the salt & hash in the "db"
@@ -374,20 +381,7 @@ app.get("/notadmin", function (request, response) {
 });
 
 // New Event Post
-app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
-    var hasImage = request.file ? true : false;
-    if (hasImage) {
-        var image = { //image object
-            fieldname: request.file.fieldname,
-            originalname: request.file.originalname,
-            encoding: request.file.encoding,
-            mimetype: request.file.mimetype,
-            destination: request.file.destination,
-            filename: request.file.filename,
-            path: request.file.path,
-            size: request.file.size
-        };
-    };
+app.post("/newPost", storage.single("image"), function (request, response) {
     EventPost.create({
         title: request.body.title,
         content: request.body.content,
@@ -397,8 +391,9 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
         enddate: request.body.enddate,
         category: request.body.category,
         externalLink: request.body.externalLink,
-        hasImage: hasImage,
-        image: hasImage ? image : null,
+        hasImage: request.file,
+        imageName: request.file ? request.file.key : null,
+        imageLink: request.file ? request.file.location : null
     }, function (error, data) {
         response.redirect("/category/all"); // redirects a request.
     });
@@ -416,10 +411,10 @@ app.get('/post/:id/delete', function (request, response) {
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                            if (error) throw error;
+                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                            if (error) console.log(error, error.stack);
                         });
                     }
                 });
@@ -483,10 +478,10 @@ app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, resp
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                            if (error) throw error;
+                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                            if (error) console.log(error, error.stack);
                         });
                     }
                 });
@@ -505,28 +500,6 @@ app.get("/admin", requireLogin, requireAdmin, function (request, response) {
             categories: settings.categories,
             capitalize: capitalize
         });
-    });
-});
-
-// Delete all posts
-app.get('/deleteAll', requireLogin, requireAdmin, function (request, response) {
-    EventPost.remove({}, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect("/");
-        }
-    });
-});
-
-// Delete all users
-app.get('/deleteAllUsers', requireLogin, requireAdmin, function (request, response) {
-    Users.remove({}, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect("/");
-        }
     });
 });
 
