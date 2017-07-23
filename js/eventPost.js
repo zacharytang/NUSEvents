@@ -22,10 +22,8 @@ var schema = new mongoose.Schema({
         fieldname: String,
         originalname: String,
         encoding: String,
-        mimeptype: String,
-        destination: String,
+        mimetype: String,
         filename: String,
-        path: String,
         size: Number,
         uploaded_at: Date
     }

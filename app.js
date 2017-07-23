@@ -5,6 +5,10 @@ var app = express();
 
 var ejs = require("ejs");
 var multer = require("multer");
+var multerS3 = require("multer-s3");
+var aws = require("aws-sdk");
+aws.config.loadFromPath("./config/s3_config.json");
+s3 = new aws.S3();
 // file system for node.js
 var fs = require("fs");
 var EventPost = require("./js/eventPost.js");
@@ -12,16 +16,22 @@ var Users = require("./js/users.js");
 
 var bodyParser = require("body-parser");
 var settings = require("./config/config.js");
-var storage = multer.diskStorage({
-    destination: function (request, file, cb) {
-        cb(null, './public/uploads/');
-    },
-    filename: function (request, file, cb) {
-        var originalname = file.originalname;
-        var extension = originalname.split(".");
-        filename = Date.now() + '.' + extension[extension.length - 1];
-        cb(null, filename);
-    }
+var storage = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: "nusevents",
+        acl: "public-read",
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        metadata: function(request, file, cb) {
+            cb(null, {fieldname: file.fieldname});
+        },
+        key: function(request, file, cb) {
+            var originalname = file.originalname;
+            var extension = originalname.split(".");
+            filename = Date.now() + '.' + extension[extension.length - 1];
+            cb(null, filename);
+        },
+    })
 });
 
 // config
@@ -316,7 +326,7 @@ app.get("/signup", requireLogout, function (request, response) {
 });
 
 // Post a new user to DB
-app.post("/signup", multer({ storage: storage }).single('image'), function (request, response) {
+app.post("/signup", storage.single("image"), function (request, response) {
     hash({ password: request.body.password }, function (err, pass, salt, hash) {
         if (err) throw err;
         // store the salt & hash in the "db"
@@ -374,7 +384,7 @@ app.get("/notadmin", function (request, response) {
 });
 
 // New Event Post
-app.post("/newPost", multer({ storage: storage }).single('image'), function (request, response) {
+app.post("/newPost", storage.single("image"), function (request, response) {
     var hasImage = request.file ? true : false;
     if (hasImage) {
         var image = { //image object
@@ -382,9 +392,6 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
             originalname: request.file.originalname,
             encoding: request.file.encoding,
             mimetype: request.file.mimetype,
-            destination: request.file.destination,
-            filename: request.file.filename,
-            path: request.file.path,
             size: request.file.size
         };
     };
@@ -505,28 +512,6 @@ app.get("/admin", requireLogin, requireAdmin, function (request, response) {
             categories: settings.categories,
             capitalize: capitalize
         });
-    });
-});
-
-// Delete all posts
-app.get('/deleteAll', requireLogin, requireAdmin, function (request, response) {
-    EventPost.remove({}, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect("/");
-        }
-    });
-});
-
-// Delete all users
-app.get('/deleteAllUsers', requireLogin, requireAdmin, function (request, response) {
-    Users.remove({}, function (err) {
-        if (err) {
-            console.log(err);
-        } else {
-            response.redirect("/");
-        }
     });
 });
 
