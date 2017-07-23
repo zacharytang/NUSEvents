@@ -2,20 +2,19 @@ var express = require("express");
 var session = require('express-session');
 var hash = require('pbkdf2-password')()
 var app = express();
-
+var bodyParser = require("body-parser");
 var ejs = require("ejs");
+
+// Schemas and file imports
+var EventPost = require("./js/eventPost.js");
+var Users = require("./js/users.js");
+var settings = require("./config/config.js");
+
 var multer = require("multer");
 var multerS3 = require("multer-s3");
 var aws = require("aws-sdk");
 aws.config.loadFromPath("./config/s3_config.json");
 s3 = new aws.S3();
-// file system for node.js
-var fs = require("fs");
-var EventPost = require("./js/eventPost.js");
-var Users = require("./js/users.js");
-
-var bodyParser = require("body-parser");
-var settings = require("./config/config.js");
 var storage = multer({
     storage: multerS3({
         s3: s3,
@@ -287,7 +286,6 @@ app.get("/post/:id", function (request, response) {
     });
 });
 
-
 // Search posts (Poster View)
 app.get("/search/:query/posters", function (request, response) {
     var query = request.params.query
@@ -414,10 +412,10 @@ app.get('/post/:id/delete', function (request, response) {
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                s3.headObject({Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                            if (error) throw error;
+                        s3.deleteObject({Key: postToDelete.imageName}, function(error, data) {
+                            if (error) console.log(error, error.stack);
                         });
                     }
                 });
@@ -481,10 +479,10 @@ app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, resp
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                s3.headObject({Key: postToDelete.imageName}, function(error, data) {
                     if (!error) {
-                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                            if (error) throw error;
+                        s3.deleteObject({Key: postToDelete.imageName}, function(error, data) {
+                            if (error) console.log(error, error.stack);
                         });
                     }
                 });
