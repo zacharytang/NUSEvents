@@ -408,8 +408,8 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
 app.get('/post/:id/delete', function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
-            return response.send(404);
-            response.render("404.ejs", {
+            return response.sendStatus(404);
+            response.redirect("404.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 categories: settings.categories,
                 capitalize: capitalize
