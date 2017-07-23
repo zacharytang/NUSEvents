@@ -409,15 +409,19 @@ app.get('/post/:id/delete', function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.sendStatus(404);
-            response.redirect("404.ejs", {
+            response.render("404.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 categories: settings.categories,
                 capitalize: capitalize
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                    if (error) throw error;
+                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                    if (!error) {
+                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                            if (error) throw error;
+                        });
+                    }
                 });
             }
             response.redirect("/deleted");
@@ -443,7 +447,7 @@ app.get("/deleted", function (request, response) {
 app.get('/admin/users/:id/delete', requireLogin, requireAdmin, function (request, response) {
     Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
         if (error || !userToDelete) {
-            return response.send(404);
+            return response.sendStatus(404);
             response.render("404.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 categories: settings.categories,
@@ -471,7 +475,7 @@ app.get("/admin/users", requireLogin, requireAdmin, function (request, response)
 app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
-            return response.send(404);
+            return response.sendStatus(404);
             response.render("404.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 categories: settings.categories,
@@ -479,8 +483,12 @@ app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, resp
             });
         } else {
             if (postToDelete.hasImage) {
-                fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
-                    if (error) throw error;
+                fs.access("./public/uploads/" + postToDelete.image.filename, function(error) {
+                    if (!error) {
+                        fs.unlink("./public/uploads/" + postToDelete.image.filename, function (error) {
+                            if (error) throw error;
+                        });
+                    }
                 });
             }
             response.redirect("/admin");
