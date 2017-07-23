@@ -11,7 +11,7 @@
                     <img class="post" src="/uploads/<%= post.image.filename %>" alt="">
                 </div>
                 <% } %>
-                <div class="<% post.image.filename ? 'col-sm-6' : 'col-sm-12' %>">
+                <div class="<%= post.image.filename ? 'col-sm-6' : 'col-sm-12' %>">
                     <h3>
                         <b>Date:</b>
                         <%= post.startdate %>
