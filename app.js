@@ -400,7 +400,7 @@ app.post("/newPost", multer({ storage: storage }).single('image'), function (req
         hasImage: hasImage,
         image: hasImage ? image : null,
     }, function (error, data) {
-        response.redirect("/"); // redirects a request.
+        response.redirect("/category/all"); // redirects a request.
     });
 });
 
