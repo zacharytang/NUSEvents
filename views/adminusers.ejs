@@ -25,7 +25,7 @@
                 <td><%= users[i]._id %></td>
                 <td><%= users[i].organiser %></td>
                 <td>
-                    <% if (users[i].name != "Admin") { %> 
+                    <% if (users[i].name !== "Admin") { %> 
                     <a href="<%= '/admin/users/' + users[i]._id + '/delete' %>"><span class="glyphicon glyphicon-trash"></span></a>
                     <% } %>
                 </td>
