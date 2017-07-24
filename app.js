@@ -63,8 +63,8 @@ function requireLogin(request, response, next) {
     if (request.session.user) {
         next();
     } else {
-        request.session.error = "Access denied!";
-        response.redirect("/notauth");
+        request.session.error = "Access denied: You need to log in!";
+        response.redirect("/error");
     }
 }
 
@@ -72,17 +72,17 @@ function requireLogout(request, response, next) {
     if (!request.session.user) {
         next();
     } else {
-        request.session.error = "Access denied!";
-        response.redirect("/notauth");
+        request.session.error = "You can't go there!";
+        response.redirect("/error");
     }
 }
 
 function requireAdmin(request, response, next) {
-    if (request.session.user.name == "Admin") {
+    if (request.session.user && request.session.user.name === "Admin") {
         next();
     } else {
-        request.session.error = "Access denied!";
-        response.redirect("/notadmin");
+        request.session.error = "Access denied: Not admin!";
+        response.redirect("/error");
     }
 }
 
@@ -102,6 +102,15 @@ function capitalize(string) {
 // Home Page
 app.get("/", function (request, response) {
     response.render("home.ejs", {
+        user: request.session.user ? request.session.user.organiser : null,
+        categories: settings.categories,
+        capitalize: capitalize
+    });
+});
+
+// General error page
+app.get("/error", function (request, response) {
+    response.render("error.ejs", {
         user: request.session.user ? request.session.user.organiser : null,
         categories: settings.categories,
         capitalize: capitalize
@@ -266,12 +275,8 @@ app.get("/post/:id", function (request, response) {
     }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
-            response.status(404);
-            response.render("404.ejs", {
-                user: username,
-                categories: settings.categories,
-                capitalize: capitalize
-            });
+            request.session.error = "Error 404: Cannot find post!";
+            response.redirect("/error");
         } else {
             response.render("eventPost.ejs", {
                 userOrg: organisation,
@@ -361,24 +366,6 @@ app.get("/newPost", requireLogin, function (request, response) {
     });
 });
 
-// Not Authorized
-app.get("/notauth", function (request, response) {
-    response.render("notAuthorised.ejs", {
-        user: request.session.user ? request.session.user.organiser : null,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
-// Not Admin
-app.get("/notadmin", function (request, response) {
-    response.render("notAdmin.ejs", {
-        user: request.session.user ? request.session.user.organiser : null,
-        categories: settings.categories,
-        capitalize: capitalize
-    });
-});
-
 // New Event Post
 app.post("/newPost", storage.single("image"), function (request, response) {
     EventPost.create({
@@ -403,10 +390,10 @@ app.get("/post/:id/delete", requireLogin, function (request, response) {
     EventPost.findById(request.params.id, function(error, postToDelete) {
         if (error || !postToDelete) {
             request.session.error = "Cannot find post!";
-            response.redirect("/404");
+            response.redirect("/error");
         } else if (request.session.user.organiser !== postToDelete.organiser) {
-            request.session.error = "Access denied!";
-            response.redirect("/notauth");
+            request.session.error = "Access denied: You can't delete this post!";
+            response.redirect("/error");
         } else {
             EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
                 if (postToDelete.hasImage) {
@@ -417,8 +404,8 @@ app.get("/post/:id/delete", requireLogin, function (request, response) {
                             });
                         }
                     });
-                    response.redirect("/deleted");
                 }
+                response.redirect("/deleted");
             });
         }
     });
@@ -439,15 +426,11 @@ app.get("/deleted", function (request, response) {
 */
 
 // Deleting a user
-app.get("/admin/users/:id/delete", requireLogin, requireAdmin, function (request, response) {
+app.get("/admin/users/:id/delete", requireAdmin, function (request, response) {
     Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
         if (error || !userToDelete) {
-            return response.sendStatus(404);
-            response.render("404.ejs", {
-                user: request.session.user ? request.session.user.organiser : null,
-                categories: settings.categories,
-                capitalize: capitalize
-            });
+            request.session.error = "Cannot find user!";
+            response.redirect("/error");
         } else {
             response.redirect("/admin/users");
         }
@@ -455,7 +438,7 @@ app.get("/admin/users/:id/delete", requireLogin, requireAdmin, function (request
 });
 
 // View all users as Admin
-app.get("/admin/users", requireLogin, requireAdmin, function (request, response) {
+app.get("/admin/users", requireAdmin, function (request, response) {
     Users.find().exec(function (error, data) {
         response.render("adminusers.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
@@ -467,32 +450,30 @@ app.get("/admin/users", requireLogin, requireAdmin, function (request, response)
 });
 
 // Deleting a post
-app.get("/admin/:id/delete", requireLogin, requireAdmin, function (request, response) {
-    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+app.get("/admin/:id/delete", requireAdmin, function (request, response) {
+    EventPost.findById(request.params.id, function(error, postToDelete) {
         if (error || !postToDelete) {
-            return response.sendStatus(404);
-            response.render("404.ejs", {
-                user: request.session.user ? request.session.user.organiser : null,
-                categories: settings.categories,
-                capitalize: capitalize
-            });
+            request.session.error = "Cannot find post!";
+            response.redirect("/error");
         } else {
-            if (postToDelete.hasImage) {
-                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                    if (!error) {
-                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                            if (error) console.log(error, error.stack);
-                        });
-                    }
-                });
-            }
-            response.redirect("/admin");
+            EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+                if (postToDelete.hasImage) {
+                    s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                        if (!error) {
+                            s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                                if (error) console.log(error, error.stack);
+                            });
+                        }
+                    });
+                }
+                response.redirect("/deleted");
+            });
         }
     });
 });
 
 // View all posts as Admin
-app.get("/admin", requireLogin, requireAdmin, function (request, response) {
+app.get("/admin", requireAdmin, function (request, response) {
     EventPost.find({}).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("admin.ejs", {
             user: request.session.user ? request.session.user.organiser : null,

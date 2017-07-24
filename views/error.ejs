@@ -1,14 +1,16 @@
 <% include header.ejs %>
 
 <div class="container-fluid text-center">
-
-    <article>
-        <p> Not Admin! </p>
-    </article>
+    <div>
+        <article>
+            <h3><%- message %></h3>
+        </article>
+    </div>
+    <hr>
     <div class="btn-group">
         <button type="button" class="btn btn-primary" onClick="window.location.href='/';">Go Back To Home</button>
         <button type="button" class="btn btn-primary" onClick="window.location.href='/category/all';">View All Events</button>
-        <button type="button" class="btn btn-primary" onClick="window.location.href='/login';">Login</button>
+        <button type="button" class="btn btn-primary" onClick="window.location.href='/newPost';">Post New Event</button>
     </div>
 </div>
 
