@@ -22,5 +22,5 @@ var schema = new mongoose.Schema({
     imageLink: String
 });
 
-schema.index({title: "text", content: "text", "organiser.type": "text"})
+schema.index({title: "text", content: "text", organiser: "text"})
 module.exports = mongoose.model("EventPost", schema);
