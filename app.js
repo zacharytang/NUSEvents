@@ -1,6 +1,6 @@
 var express = require("express");
-var session = require('express-session');
-var hash = require('pbkdf2-password')()
+var session = require("express-session");
+var hash = require("pbkdf2-password")();
 var app = express();
 var bodyParser = require("body-parser");
 var ejs = require("ejs");
@@ -26,7 +26,7 @@ var storage = multer({
         key: function(request, file, cb) {
             var originalname = file.originalname;
             var extension = originalname.split(".");
-            filename = Date.now() + '.' + extension[extension.length - 1];
+            filename = Date.now() + "." + extension[extension.length - 1];
             cb(null, filename);
         },
     })
@@ -43,7 +43,7 @@ app.use(express.static("public"));
 app.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
-    secret: 'shhhh, very secret'
+    secret: "shhhh, very secret"
 }));
 
 // Session-persisted message middleware
@@ -53,7 +53,7 @@ app.use(function (req, res, next) {
     var msg = req.session.success;
     delete req.session.error;
     delete req.session.success;
-    res.locals.message = '';
+    res.locals.message = "";
     if (err) res.locals.message = '<p class="msg error">' + err + '</p>';
     if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
     next();
@@ -109,7 +109,7 @@ app.get("/", function (request, response) {
 });
 
 // Login Screen
-app.get('/login', requireLogout, function (request, response) {
+app.get("/login", requireLogout, function (request, response) {
     response.render("login.ejs", {
         user: request.session.user ? request.session.user.organiser : null,
         categories: settings.categories, //settings is like related to config.js or something.
@@ -117,7 +117,7 @@ app.get('/login', requireLogout, function (request, response) {
     });
 });
 
-app.post('/login', function (request, response) {
+app.post("/login", function (request, response) {
     authenticate(request.body.username, request.body.password, function (error, user) {
         if (user) {
             // Regenerate session when signing in
@@ -129,11 +129,11 @@ app.post('/login', function (request, response) {
                 request.session.user = user;
                 request.session.success = 'Authenticated as ' + user.name
                     + ' click to <a href="/logout">logout</a>. ';
-                response.redirect('/');
+                response.redirect("/");
             });
         } else {
             request.session.error = 'Authentication failed, please check your username or password'
-            response.redirect('/login');
+            response.redirect("/login");
         }
     });
 });
@@ -143,7 +143,7 @@ function authenticate(inputname, pass, fn) {
     //var user = users[name];
     Users.find({ name: inputname }, function (err, user) {
         if (user.length == 0) {
-            return fn(new Error('cannot find user'));
+            return fn(new Error("cannot find user"));
         } else {
             user = user[0];
             usersalt = user.salt;
@@ -157,18 +157,18 @@ function authenticate(inputname, pass, fn) {
             if (hash == userhash) {
                 return fn(null, user);
             }
-            fn(new Error('invalid password'));
+            fn(new Error("invalid password"));
         });
     });
 }
 
 // Logout
-app.get('/logout', requireLogin, function (request, response) {
+app.get("/logout", requireLogin, function (request, response) {
     request.session.destroy(function (err) {
         if (err) {
             console.log(err);
         } else {
-            response.redirect('/');
+            response.redirect("/");
         }
     });
 });
@@ -176,7 +176,7 @@ app.get('/logout', requireLogin, function (request, response) {
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
     if (request.session.user.name == "Admin") {
-        response.redirect('/admin');
+        response.redirect("/admin");
     } else {
         EventPost.find({ organiser: request.session.user.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
             response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
@@ -255,7 +255,6 @@ app.get("/category/:categoryID", function (request, response) {
         });
     });
 });
-
 
 // View individual post
 app.get("/post/:id", function (request, response) {
@@ -400,7 +399,7 @@ app.post("/newPost", storage.single("image"), function (request, response) {
 });
 
 // Deleting a post
-app.get('/post/:id/delete', function (request, response) {
+app.get("/post/:id/delete", function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.sendStatus(404);
@@ -439,7 +438,7 @@ app.get("/deleted", function (request, response) {
 */
 
 // Deleting a user
-app.get('/admin/users/:id/delete', requireLogin, requireAdmin, function (request, response) {
+app.get("/admin/users/:id/delete", requireLogin, requireAdmin, function (request, response) {
     Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
         if (error || !userToDelete) {
             return response.sendStatus(404);
@@ -467,7 +466,7 @@ app.get("/admin/users", requireLogin, requireAdmin, function (request, response)
 });
 
 // Deleting a post
-app.get('/admin/:id/delete', requireLogin, requireAdmin, function (request, response) {
+app.get("/admin/:id/delete", requireLogin, requireAdmin, function (request, response) {
     EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
             return response.sendStatus(404);
