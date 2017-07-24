@@ -150,11 +150,10 @@ app.post("/login", function (request, response) {
 // Authenticate against database
 function authenticate(inputname, pass, fn) {
     //var user = users[name];
-    Users.find({ name: inputname }, function (err, user) {
-        if (user.length == 0) {
+    Users.findOne({ name: inputname }, function (err, user) {
+        if (!user) {
             return fn(new Error("cannot find user"));
         } else {
-            user = user[0];
             usersalt = user.salt;
             userhash = user.hash;
         }
@@ -163,7 +162,7 @@ function authenticate(inputname, pass, fn) {
         // found the user
         hash({ password: pass, salt: usersalt }, function (err, pass, salt, hash) {
             if (err) return fn(err);
-            if (hash == userhash) {
+            if (hash === userhash) {
                 return fn(null, user);
             }
             fn(new Error("invalid password"));
@@ -184,13 +183,13 @@ app.get("/logout", requireLogin, function (request, response) {
 
 // View organisation profile
 app.get("/myorg", requireLogin, function (request, response) {
-    if (request.session.user.name == "Admin") {
+    if (request.session.user.name === "Admin") {
         response.redirect("/admin");
     } else {
         EventPost.find({ organiser: request.session.user.organiser })
-            .sort({ startdate: 1 })
-            .exec(function (error, data) {
-            response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
+        .sort({ startdate: 1 })
+        .exec(function (error, data) {
+            response.render("organisationprofile.ejs", {
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
                 orgname: request.session.user ? request.session.user.organiser : null,
@@ -205,10 +204,12 @@ app.get("/myorg", requireLogin, function (request, response) {
 app.get("/orgs/:orgID/posters", function (request, response) {
     Users.findById(request.params.orgID).exec(function (error, orgname) {
         if (error || !orgname) {
-            request.session.error = "Cannot find organisation!";
+            request.session.error = "Error 404: Cannot find organisation!";
             response.redirect("/error");
         } else {
-            EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+            EventPost.find({ organiser: orgname.organiser })
+            .sort({ startdate: 1 })
+            .exec(function (error, data) {
                 response.render("organisationimg.ejs", {
                     user: request.session.user ? request.session.user.organiser : null,
                     posts: data,
@@ -226,10 +227,12 @@ app.get("/orgs/:orgID/posters", function (request, response) {
 app.get("/orgs/:orgID", function (request, response) {
     Users.findById(request.params.orgID).exec(function (error, orgname) {
         if (error || !orgname) {
-            request.session.error = "Cannot find organisation!";
+            request.session.error = "Error 404: Cannot find organisation!";
             response.redirect("/error");
         } else {
-            EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+            EventPost.find({ organiser: orgname.organiser })
+            .sort({ startdate: 1 })
+            .exec(function (error, data) {
                 response.render("organisationimg.ejs", {
                     user: request.session.user ? request.session.user.organiser : null,
                     posts: data,
@@ -246,7 +249,9 @@ app.get("/orgs/:orgID", function (request, response) {
 // View by category (Poster View)
 app.get("/category/:categoryID/posters", function (request, response) {
     var category = request.params.categoryID
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: 1 }).exec(function (error, data) {
+    EventPost.find(category != "all" ? { category: category } : {})
+    .sort({ startdate: 1 })
+    .exec(function (error, data) {
         response.render("indeximg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -260,8 +265,10 @@ app.get("/category/:categoryID/posters", function (request, response) {
 // View by category
 app.get("/category/:categoryID", function (request, response) {
     var category = request.params.categoryID;
-    EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: 1 }).exec(function (error, data) {
-        response.render("indexcon.ejs", { //response.render is an example of a response method. Renders a view template.
+    EventPost.find(category != "all" ? { category: category } : {})
+    .sort({ startdate: 1 })
+    .exec(function (error, data) {
+        response.render("indexcon.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
             category: category,
@@ -292,7 +299,9 @@ app.get("/post/:id", function (request, response) {
 // Search posts (Poster View)
 app.get("/search/:query/posters", function (request, response) {
     var query = request.params.query
-    EventPost.find({ $text: { $search: query } }).sort({ startdate: 1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } })
+    .sort({ startdate: 1 })
+    .exec(function (error, data) {
         response.render("searchimg.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -306,7 +315,9 @@ app.get("/search/:query/posters", function (request, response) {
 // Search posts
 app.get("/search/:query", function (request, response) {
     var query = request.params.query;
-    EventPost.find({ $text: { $search: query } }).sort({ startdate: 1 }).exec(function (error, data) {
+    EventPost.find({ $text: { $search: query } })
+    .sort({ startdate: 1 })
+    .exec(function (error, data) {
         response.render("searchcon.ejs", {
             user: request.session.user ? request.session.user.organiser : null,
             posts: data,
@@ -342,7 +353,6 @@ app.post("/signup", storage.single("image"), function (request, response) {
                 response.redirect("/signup");
             } else response.redirect("/signupsuccess"); // redirects a request.
         });
-
     });
 });
 
@@ -389,7 +399,7 @@ app.post("/newPost", storage.single("image"), function (request, response) {
 app.get("/post/:id/delete", requireLogin, function (request, response) {
     EventPost.findById(request.params.id, function(error, postToDelete) {
         if (error || !postToDelete) {
-            request.session.error = "Cannot find post!";
+            request.session.error = "Error 404: Cannot find post!";
             response.redirect("/error");
         } else if (request.session.user.organiser !== postToDelete.organiser) {
             request.session.error = "Access denied: You can't delete this post!";
@@ -429,7 +439,7 @@ app.get("/deleted", function (request, response) {
 app.get("/admin/users/:id/delete", requireAdmin, function (request, response) {
     Users.findByIdAndRemove(request.params.id, function (error, userToDelete) {
         if (error || !userToDelete) {
-            request.session.error = "Cannot find user!";
+            request.session.error = "Error 404: Cannot find user!";
             response.redirect("/error");
         } else {
             response.redirect("/admin/users");
@@ -451,23 +461,21 @@ app.get("/admin/users", requireAdmin, function (request, response) {
 
 // Deleting a post
 app.get("/admin/:id/delete", requireAdmin, function (request, response) {
-    EventPost.findById(request.params.id, function(error, postToDelete) {
+    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
         if (error || !postToDelete) {
-            request.session.error = "Cannot find post!";
+            request.session.error = "Error 404: Cannot find post!";
             response.redirect("/error");
         } else {
-            EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
-                if (postToDelete.hasImage) {
-                    s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                        if (!error) {
-                            s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                                if (error) console.log(error, error.stack);
-                            });
-                        }
-                    });
-                }
-                response.redirect("/deleted");
-            });
+            if (postToDelete.hasImage) {
+                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                    if (!error) {
+                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                            if (error) console.log(error, error.stack);
+                        });
+                    }
+                });
+            }
+            response.redirect("/deleted");
         }
     });
 });
