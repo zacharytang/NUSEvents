@@ -399,26 +399,27 @@ app.post("/newPost", storage.single("image"), function (request, response) {
 });
 
 // Deleting a post
-app.get("/post/:id/delete", function (request, response) {
-    EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+app.get("/post/:id/delete", requireLogin, function (request, response) {
+    EventPost.findById(request.params.id, function(error, postToDelete) {
         if (error || !postToDelete) {
-            return response.sendStatus(404);
-            response.render("404.ejs", {
-                user: request.session.user ? request.session.user.organiser : null,
-                categories: settings.categories,
-                capitalize: capitalize
-            });
+            request.session.error = "Cannot find post!";
+            response.redirect("/404");
+        } else if (request.session.user.organiser !== postToDelete.organiser) {
+            request.session.error = "Access denied!";
+            response.redirect("/notauth");
         } else {
-            if (postToDelete.hasImage) {
-                s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                    if (!error) {
-                        s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
-                            if (error) console.log(error, error.stack);
-                        });
-                    }
-                });
-            }
-            response.redirect("/deleted");
+            EventPost.findByIdAndRemove(request.params.id, function (error, postToDelete) {
+                if (postToDelete.hasImage) {
+                    s3.headObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                        if (!error) {
+                            s3.deleteObject({Bucket: "nusevents", Key: postToDelete.imageName}, function(error, data) {
+                                if (error) console.log(error, error.stack);
+                            });
+                        }
+                    });
+                    response.redirect("/deleted");
+                }
+            });
         }
     });
 });
