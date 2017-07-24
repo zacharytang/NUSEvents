@@ -187,7 +187,9 @@ app.get("/myorg", requireLogin, function (request, response) {
     if (request.session.user.name == "Admin") {
         response.redirect("/admin");
     } else {
-        EventPost.find({ organiser: request.session.user.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+        EventPost.find({ organiser: request.session.user.organiser })
+            .sort({ startdate: 1 })
+            .exec(function (error, data) {
             response.render("organisationprofile.ejs", { //response.render is an example of a response method. Renders a view template.
                 user: request.session.user ? request.session.user.organiser : null,
                 posts: data,
@@ -201,35 +203,43 @@ app.get("/myorg", requireLogin, function (request, response) {
 
 // View by organiser (Poster View)
 app.get("/orgs/:orgID/posters", function (request, response) {
-    orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
-            response.render("organisationimg.ejs", {
-                user: request.session.user ? request.session.user.organiser : null,
-                posts: data,
-                orgname: orgname.organiser,
-                orgID: orgID,
-                categories: settings.categories,
-                capitalize: capitalize
+        if (error || !orgname) {
+            request.session.error = "Cannot find organisation!";
+            response.redirect("/error");
+        } else {
+            EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+                response.render("organisationimg.ejs", {
+                    user: request.session.user ? request.session.user.organiser : null,
+                    posts: data,
+                    orgname: orgname.organiser,
+                    orgID: request.params.orgID,
+                    categories: settings.categories,
+                    capitalize: capitalize
+                });
             });
-        });
+        }
     });
 });
 
 // View by organiser
 app.get("/orgs/:orgID", function (request, response) {
-    orgID = request.params.orgID;
     Users.findById(request.params.orgID).exec(function (error, orgname) {
-        EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
-            response.render("organisationcon.ejs", {
-                user: request.session.user ? request.session.user.organiser : null,
-                posts: data,
-                orgname: orgname.organiser,
-                orgID: orgID,
-                categories: settings.categories,
-                capitalize: capitalize
+        if (error || !orgname) {
+            request.session.error = "Cannot find organisation!";
+            response.redirect("/error");
+        } else {
+            EventPost.find({ organiser: orgname.organiser }).sort({ startdate: 1 }).exec(function (error, data) {
+                response.render("organisationimg.ejs", {
+                    user: request.session.user ? request.session.user.organiser : null,
+                    posts: data,
+                    orgname: orgname.organiser,
+                    orgID: request.params.orgID,
+                    categories: settings.categories,
+                    capitalize: capitalize
+                });
             });
-        });
+        }
     });
 });
 
@@ -249,11 +259,7 @@ app.get("/category/:categoryID/posters", function (request, response) {
 
 // View by category
 app.get("/category/:categoryID", function (request, response) {
-    // Route parameters
-    // eg: if /category/All then req.params.categoryID == All
     var category = request.params.categoryID;
-    // if category is not "all" then find all posts with the Category matching the CategoryID
-    // .exec is also mongoose. Zzz
     EventPost.find(category != "all" ? { category: category } : {}).sort({ startdate: 1 }).exec(function (error, data) {
         response.render("indexcon.ejs", { //response.render is an example of a response method. Renders a view template.
             user: request.session.user ? request.session.user.organiser : null,
@@ -267,20 +273,14 @@ app.get("/category/:categoryID", function (request, response) {
 
 // View individual post
 app.get("/post/:id", function (request, response) {
-    if (request.session.user) {
-        var username = request.session.user.organiser;
-        var organisation = request.session.user.organiser;
-    } else {
-        username = organisation = null;
-    }
     EventPost.findById(request.params.id, function (error, post) { //is a mongoose method. fml
         if (error || !post) {
             request.session.error = "Error 404: Cannot find post!";
             response.redirect("/error");
         } else {
             response.render("eventPost.ejs", {
-                userOrg: organisation,
-                user: username,
+                userOrg:  request.session.user ? request.session.user.organiser : null,
+                user:  request.session.user ? request.session.user.organiser : null,
                 categories: settings.categories,
                 capitalize: capitalize,
                 post: post
